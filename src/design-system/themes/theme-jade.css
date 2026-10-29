@@ -1,0 +1,13 @@
+[data-theme="jade"] {
+  color-scheme: light;
+  --color-blush: #fbf3f3;
+  --color-rose: #955b6b;
+  --color-charcoal: #2d2529;
+  --surface-page: var(--color-blush);
+  --surface-card: #fffdfb;
+  --text-primary: var(--color-charcoal);
+  --text-secondary: #74626a;
+  --text-accent: #804456;
+  --border-subtle: #e7d7db;
+  --border-focus: var(--color-rose);
+}
