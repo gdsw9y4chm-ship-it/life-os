@@ -13,7 +13,7 @@ const db = connectDatabase(browserDatabasePath());
 try {
   db.transaction(() => {
     db.exec(
-      "DELETE FROM task_reminders; DELETE FROM task_checklist_items; DELETE FROM tasks WHERE parent_task_id IS NOT NULL; DELETE FROM tasks; DELETE FROM milestones; DELETE FROM projects; DELETE FROM goals;",
+      "DELETE FROM planner_exceptions; DELETE FROM events; DELETE FROM time_blocks; DELETE FROM scheduled_tasks; DELETE FROM planner_series; DELETE FROM task_reminders; DELETE FROM task_checklist_items; DELETE FROM tasks WHERE parent_task_id IS NOT NULL; DELETE FROM tasks; DELETE FROM milestones; DELETE FROM projects; DELETE FROM goals;",
     );
     if (!["populated", "sparse"].includes(process.argv[2])) return;
     const user = new SqliteUserRepository(db).getCurrent()!;
