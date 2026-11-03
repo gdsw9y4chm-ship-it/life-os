@@ -1,3 +1,4 @@
+import { TaskList, QuickCapture } from "../tasks/components";
 import { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { ArrowUp, ArrowDown, Layers } from "lucide-react";
@@ -98,6 +99,18 @@ export function LifeView({ data }: { data: Snapshot }) {
                           <Badge>
                             {area.is_archived ? "Archived" : "Life Area"}
                           </Badge>
+                          <Link
+                            to="/tasks"
+                            search={{
+                              view: "all",
+                              area: area.id,
+                              project: "",
+                              q: "",
+                              context: "",
+                            }}
+                          >
+                            Voir les tâches
+                          </Link>
                           <AreaEditor area={area} />
                         </div>
                       </Card>
@@ -322,13 +335,29 @@ export function ProjectDetailView({
         ) : (
           <p className="organization-meta">
             {project.progress_mode === "task_based"
-              ? "Disponible lorsque les tâches seront intégrées."
+              ? "Aucune tâche pertinente pour calculer la progression."
               : project.progress_mode === "milestones"
                 ? "Ajoutez un milestone pour commencer le suivi."
                 : "Aucune progression suivie."}
           </p>
         )}
       </Card>
+      <Section
+        title="Tasks"
+        description="Les actions de ce projet, avec leurs propres statuts."
+      >
+        <QuickCapture defaults={{ project_id: project.id }} />
+        <h3>Tâches ouvertes</h3>
+        <TaskList
+          tasks={detail.tasks.filter((task) => task.status !== "done")}
+          references={data}
+        />
+        <h3>Tâches terminées</h3>
+        <TaskList
+          tasks={detail.tasks.filter((task) => task.status === "done")}
+          references={data}
+        />
+      </Section>
       <Section
         title="Milestones"
         description="Les étapes concrètes de ce projet."

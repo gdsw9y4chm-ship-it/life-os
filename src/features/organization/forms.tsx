@@ -37,7 +37,7 @@ export const labels: Record<string, string> = {
   milestones: "Milestones",
   manual: "Manuelle",
   none: "Aucune",
-  task_based: "Par tâches (à venir)",
+  task_based: "Par tâches",
 };
 const text = (data: FormData, key: string) =>
   String(data.get(key) ?? "").trim();
@@ -370,7 +370,8 @@ export function ProjectEditor({
       )}
       {mode === "task_based" && (
         <p className="field-hint">
-          Disponible lorsque les tâches seront intégrées.
+          Calculée depuis les tâches réelles du projet, sans doublonner parents
+          et sous-tâches.
         </p>
       )}
     </Editor>

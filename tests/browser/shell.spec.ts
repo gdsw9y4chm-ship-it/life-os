@@ -48,7 +48,7 @@ test("desktop search navigates only to real shell routes", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/today");
   await page.getByRole("button", { name: "Search", exact: true }).click();
-  await page.getByLabel("Rechercher une page", { exact: true }).fill("Notes");
+  await page.getByLabel("Rechercher une page ou une tâche", { exact: true }).fill("Notes");
   await page
     .getByRole("navigation", { name: "Résultats de recherche" })
     .getByRole("link", { name: "Notes", exact: true })
@@ -83,9 +83,9 @@ for (const [name, width, height] of [
     const dialog = page.getByRole("dialog", { name: "Quick Add", exact: true });
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByText("Aperçu UI · actions indisponibles"),
+      dialog.getByText("Task disponible · autres actions à venir"),
     ).toBeVisible();
-    await expect(dialog.locator("button:disabled")).toHaveCount(10);
+    await expect(dialog.locator("button:disabled")).toHaveCount(9);
     const box = await dialog.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);

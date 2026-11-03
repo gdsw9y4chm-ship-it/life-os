@@ -1,6 +1,6 @@
 # Life OS · The Jade Edition
 
-Application personnelle locale. La Phase 3 apporte les Life Areas, Goals, Projects et Milestones persistés dans SQLite, dans le Design System Jade de Phase 2. Les autres modules restent à venir. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
+Application personnelle locale. Tasks & Inbox permettent de capturer, clarifier, prioriser et suivre des actions persistées dans SQLite, reliées aux Life Areas, Goals, Projects et Milestones. Le Planner et le dashboard Today restent à venir. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
 
 ## Stack
 
@@ -50,8 +50,8 @@ Le typecheck génère l’arbre des routes avant de vérifier les types ; il fon
 - Emplacement par défaut : `data/life-os.sqlite`, relatif à la racine du dépôt.
 - Configuration facultative : copier `.env.example` vers `.env` et adapter `LIFE_OS_DB_PATH`.
 - Connexion centralisée dans `src/db/connection.ts` : clés étrangères activées, délai d’attente de 5 secondes, WAL pour les bases sur disque.
-- Migrations SQL versionnées : `001_users.sql` et `002_core_organization.sql`. La migration Phase 1 est inchangée.
-- Tables : `users`, `life_areas`, `goals`, `projects`, `milestones` et table technique `schema_migrations`.
+- Migrations SQL versionnées : `001_users.sql`, `002_core_organization.sql` et `003_tasks_inbox.sql`. La migration Phase 1 est inchangée.
+- Tables : `users`, `life_areas`, `goals`, `projects`, `milestones`, `tasks`, `task_checklist_items`, `task_reminders` et table technique `schema_migrations`.
 - Toutes les migrations en attente sont appliquées dans une transaction immédiate. Un échec annule la transaction ; un checksum détecte les migrations déjà appliquées qui ont été modifiées. Ajouter une nouvelle migration au registre de `src/db/migrate.ts`, sans modifier celles déjà appliquées.
 - `db:seed` exige les migrations préalables. Il crée Jade et ses 11 Life Areas par identifiants stables ; les préférences, renommages, archives et positions existantes ne sont pas réinitialisés. Aucun Goal, Project ou Milestone de démonstration.
 - Avatar initial : `NULL`. Thème `jade`, fuseau `Europe/Paris`, semaine `Monday`, langue `fr-FR`. Dates UTC ISO 8601.
@@ -60,7 +60,7 @@ Le typecheck génère l’arbre des routes avant de vérifier les types ; il fon
 
 ## Tests
 
-39 tests Bun couvrent la fondation et le domaine Core Data : migrations, seed, validations, relations, isolation, archivage, ordre, progression et persistance après réouverture. 18 tests Playwright couvrent le shell et les workflows métier desktop/mobile (57 tests au total).
+70 tests Bun couvrent la fondation, Core Data et Tasks : migrations, seed, validations, relations, isolation, transitions, dates, archivage, rappels, checklist, ordre, progression et persistance après réouverture. 27 tests Playwright couvrent le shell et les workflows métier desktop/mobile (97 tests au total).
 
 Le factory de tests crée des bases en mémoire. Les tests de persistance utilisent des dossiers temporaires uniques, supprimés après fermeture des connexions. La résolution implicite de la base de développement est refusée lorsque `NODE_ENV=test`. Un test vérifie qu’une base sentinelle configurée par variable d’environnement reste identique octet par octet.
 
@@ -69,7 +69,7 @@ Le factory de tests crée des bases en mémoire. Les tests de persistance utilis
 ```text
 src/routes/                         pages métier, shells futurs et document racine
   ↓
-src/features/users|organization/    fonctions serveur TanStack Start et vues métier
+src/features/users|organization|tasks/    fonctions serveur TanStack Start et vues métier
   ↓
 src/services/                       services métier, règles de validation et assemblage serveur
   ↓
@@ -85,7 +85,7 @@ src/tests/                          tests Bun
 scripts/                            commandes DB, routes et serveur local
 ```
 
-`src/components/layout/` contient AppShell, PageLayout, navigation et Quick Add. `src/design-system/components/` contient les primitives génériques. Les helpers React sont dans `lib`. Aucun module métier de Phase 4 ou des phases suivantes n’est initialisé.
+`src/components/layout/` contient AppShell, PageLayout, navigation et Quick Add. `src/design-system/components/` contient les primitives génériques. Les helpers React sont dans `lib`. Aucun module métier de Phase 5 ou des phases suivantes n’est initialisé.
 
 ## Décisions techniques
 
@@ -199,3 +199,84 @@ Chaque mutation web est transactionnelle. Le seed regroupe le profil et ses 11 L
 Captures générées par les tests dans `artifacts/phase-3-*` (non versionnées) : Life, Projects, formulaire et détail en desktop/mobile, plus Projects vide. Les projets visibles sur ces captures sont des fixtures isolées, jamais insérées dans la base personnelle.
 
 Commandes : `bun run db:migrate`, `bun run db:seed`, `bun test src/tests`, `PLAYWRIGHT_CHANNEL=chrome bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run build`, `git diff --check`. Chrome installé est utilisé car le Chromium propre à Playwright n’est pas installé sur ce Mac. Aucune dépendance ajoutée. Aucun développement Phase 4, push ou merge.
+
+## Phase 4 · Tasks & Inbox
+
+Branche `codex/phase-4-tasks-inbox`, depuis `main` au commit `9c54dbb321a5fa4972926f9570eca7c33cd2fb3c`. Le cahier des charges Notion et son espace LIFE OS ont été consultés en lecture seule ; le brief Phase 4 précise le périmètre. Le suivi Notion reste historiquement antérieur aux merges récents, dont Git fait foi.
+
+### Database et modèle
+
+Migration additive `003_tasks_inbox.sql` : `tasks`, `task_checklist_items`, `task_reminders`, tables STRICT et index sur propriétaire/statut/dates/relations. Les migrations 001 et 002 restent inchangées. Aucun seed de tâches ou de rappels : seul Jade et ses 11 Life Areas sont initialisés.
+
+Task contient le titre, la description, les relations facultatives Project/Milestone/Life Area/Parent Task, statut, priorité, effort, Do Date, Deadline, durée estimée entière, contexte extensible, position, Waiting, timestamps de complétion/archivage et de création/modification. Statuts `inbox | todo | doing | waiting | done | someday`, priorités `must | should | could | none`, efforts `low | medium | deep | none`. Un titre seul suffit ; Inbox et aucune priorité/effort sont les valeurs par défaut.
+
+Do Date et Deadline sont deux dates calendaires indépendantes. Une Do Date après la Deadline reste autorisée : elle décrit un choix de travail, sans déplacer la limite réelle. Aucune Scheduled Time et aucun moteur de récurrence. Une future migration pourra ajouter une relation vers une règle de récurrence et ses occurrences ; aucun champ fictif ni répétition simulée aujourd’hui.
+
+### Relations et historique
+
+- Chaque opération est limitée au profil côté serveur, jamais à un user_id envoyé par le navigateur. Repositories SQL paramétrés, règles métier dans TaskService et fonctions pures, transactions pour les écritures composées. Aucun accès SQLite dans React.
+- Une tâche liée à un Project **hérite dynamiquement de sa Life Area**. Le champ propre de la tâche reste NULL dans ce cas ; une Life Area contradictoire est refusée. Modifier la Life Area du Project se reflète immédiatement dans ses tâches. Pour choisir un domaine indépendant, retirer le Project.
+- Un Milestone doit appartenir au Project choisi ; sans Project fourni, il permet de déduire son Project. Changer de Project dans l’UI retire le Milestone sélectionné. SQLite empêche aussi le déplacement d’un Milestone lié vers un autre Project.
+- Les foreign keys et triggers SQLite doublent les contrôles d’appartenance. Propriétaire de Task immuable ; parent du même utilisateur ; aucun cycle et un seul niveau de sous-tâches, y compris si les enfants sont archivés.
+- Une sous-tâche reste indépendante (statut, dates, projet). Sa complétion ne termine pas automatiquement son parent et inversement. Aucun archivage en cascade.
+- Archivage indépendant du statut, restaurable, sans suppression des relations, checklist ou rappel. Aucune suppression physique de Task exposée. User/Parent/Checklist/Reminder protègent l’historique par RESTRICT. Suppression physique d’un lien facultatif détache par SET NULL ; archiver un Project préserve ses Tasks.
+
+### Dates, Waiting et Reminder
+
+Les Smart Lists utilisent la date locale du profil (Jade : Europe/Paris), calculée côté serveur ; les timestamps sont en UTC. Passer en `done` enregistre `completed_at` une seule fois ; éditer une tâche déjà terminée ne le réécrit pas. Reopen vers To Do ou autre statut actif efface `completed_at`.
+
+Waiting conserve `waiting_for`, `waiting_since` et `follow_up_date`. La première entrée sans date initialise `waiting_since` au jour du profil. Les informations d’attente restent conservées après un changement de statut et sont modifiables ; elles ne rendent pas une tâche active éligible aux relances. Une relance arrivée ne change jamais automatiquement le statut.
+
+Un rappel facultatif par tâche (contrainte UNIQUE) est enregistré, modifiable et effaçable dans le détail. L’éditeur affiche explicitement le fuseau du profil et convertit vers un instant UTC, indépendamment du fuseau du navigateur. Les heures inexistantes au passage à l’heure d’été sont refusées ; pour une heure répétée à l’automne, la conversion choisit la seconde occurrence en Europe/Paris. **Pas de notification système ni de scheduler dans cette phase** ; l’UI le précise.
+
+### Smart Lists réellement implémentées
+
+Toutes les vues ordinaires excluent les archives. Filtres par contexte, projet, domaine effectif, titre et description combinables.
+
+- Inbox : `inbox`.
+- Today : `todo | doing` avec Do Date = aujourd’hui.
+- Upcoming : `todo | doing` avec Do Date future.
+- Waiting : `waiting`.
+- À relancer : `waiting` avec Follow-up ≤ aujourd’hui.
+- Overdue : Deadline passée, hors `done` et `someday` ; Waiting reste visible avec son indicateur, sans être présenté comme une action immédiate.
+- Someday : `someday`.
+- Completed : `done`.
+- Sans Do Date : `todo | doing` sans Do Date ; ce n’est pas le futur Scheduled du Planner.
+- Toutes : toutes les tâches non archivées ; Archives : tâches archivées, restaurables.
+
+La recherche porte sur titre et description, sans distinction de casse ou d’accents. Pour cette V1, elle filtre les résultats déjà limités au profil et au contexte, sans moteur FTS supplémentaire. La recherche du shell couvre les tâches non archivées, terminées incluses. Le filtre de contexte accepte les six suggestions initiales et des contextes personnalisés. Le nombre et la somme des durées estimées portent sur les tâches affichées, avec mention des durées manquantes.
+
+### Règle de progression task_based
+
+Dénominateur : tâches non archivées et non Someday du Project. Une sous-tâche est exclue du décompte si son parent est lui-même éligible **dans le même Project**. Le parent pèse alors une seule unité et son propre statut décide de sa complétion ; aucun statut agrégé automatique. Si le parent est archivé/Someday/hors de ce Project, l’enfant pertinent compte indépendamment.
+
+Numérateur : tâches `done` parmi ces unités. Pourcentage arrondi à l’entier. Aucun élément éligible = aucune valeur, pas un zéro décoratif. Compléter, rouvrir, archiver, déplacer une tâche ou modifier son statut recalcule la valeur à la lecture. Les modes manual/milestones/none restent disponibles.
+
+### UI
+
+- `/tasks` : navigation Smart Lists desktop, bandeau horizontal mobile, état et filtres conservés dans l’URL. Inbox avec champ Quick Capture : Entrée crée la tâche sans formulaire complet. Actions rapides dans chaque TaskRow : To Do, priorité, Do Date, Project/Life Area, Someday, archivage/restauration.
+- Today dans Tasks présente Must / Should / Could / No priority ; `/today` reste le shell de Phase 2.
+- `/tasks/$taskId` : page de détail responsive, édition complète, Waiting, Reminder, checklist et sous-tâches. Checklist indépendante des Tasks : ajout, renommage, complétion, retrait et réordonnancement accessible par boutons. Sous-tâches ouvertes depuis leur parent comme de vraies Tasks.
+- TaskRow est réutilisé dans les vues Tasks, Project et les sous-tâches. Complétion et archivage disposent d’un Undo de la dernière action tant que la liste reste affichée. Reopen et restauration restent possibles ensuite.
+- Le bouton + rend Task fonctionnel. Les neuf autres entrées Quick Add restent désactivées. Search cherche les pages et les vraies tâches ; accès aussi depuis le menu mobile.
+- Project Detail affiche tâches ouvertes/terminées, Quick Capture lié au Project et vraie progression task_based. Depuis chaque Life Area, « Voir les tâches » ouvre la liste filtrée sur le domaine effectif.
+- Composants Jade réutilisés, listes sobres sans grandes cards décoratives. Les formulaires attendent l’hydratation avant interaction ; mutations occupées, erreurs visibles et aucune réussite affichée avant confirmation serveur.
+
+### Validation du 3 novembre 2026
+
+70 tests de données/services (31 nouveaux) et 27 tests navigateur (9 nouveaux), soit **97 tests**. Les tests existants ont été ajustés uniquement aux nouvelles tables, à Task disponible dans Quick Add, au libellé Search et à la progression task_based désormais réelle.
+
+Couverture : capture, clarification, transitions, timestamps, Undo, priorités, Waiting/Follow-ups, dates et fuseaux, contextes, relations croisées refusées, historique, rappels, checklist, hiérarchie, vraie progression, recherche et persistance après fermeture/réouverture ou refresh. Migrations complètes et upgrade depuis Phase 3 vérifiés ; seed réexécuté sans doublons. Fixtures exclusivement dans des bases temporaires isolées.
+
+Navigateurs : Chrome via Playwright, workflows desktop 1440×1000 et mobile 390×844 ; contrôles à 320×568 et régressions du shell jusqu’à 1920 px. Captures `artifacts/phase-4-{today,waiting,detail,project}-{desktop,mobile}.png`, ignorées par Git. Les tâches illustrées sont des fixtures de test, jamais des données ajoutées au profil personnel.
+
+Commandes : `bun run db:migrate`, `bun run db:seed`, `bun test src/tests`, `PLAYWRIGHT_CHANNEL=chrome bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run build`, `git diff --check`. Aucune dépendance ajoutée, aucun changement Notion, aucun push/merge. Aucun Planner, notification système, récurrence exécutée ou module Phase 5.
+
+
+### Passe UX Tasks
+
+Les onze Smart Lists sont regroupées en Focus, Suivi et Plus sur desktop. Sur mobile, Inbox, Today et Upcoming restent visibles ; Plus ouvre les huit autres vues dans une Sheet, avec la vue active signalée dans le menu et le titre de liste.
+
+Search et Filters partagent une ligne compacte. La Sheet conserve les filtres Context, Project et Life Area et permet de combiner Priority et Effort côté présentation ; les critères restent dans l’URL et suivent les changements de vue.
+
+Le détail présente les propriétés en lecture, avec Terminer/Rouvrir et Modifier. Modifier ouvre le formulaire complet dans une Sheet ; checklist et sous-tâches restent accessibles dans la consultation. Aucun changement de modèle, repository, service, Quick Capture ou progression Project.

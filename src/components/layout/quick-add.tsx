@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { QuickCapture } from "../../features/tasks/components";
 import {
   CheckCheck,
   CalendarDays,
@@ -29,10 +31,16 @@ const more: [string, LucideIcon][] = [
   ["List", List],
 ];
 export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
+  const [capture, setCapture] = useState(false);
+  const [created, setCreated] = useState(false);
   return (
     <Sheet
+      onOpenChange={() => {
+        setCapture(false);
+        setCreated(false);
+      }}
       title="Quick Add"
-      description="Un point d’entrée pour vos idées. Ces actions seront disponibles dans les prochaines phases."
+      description="Capturez une tâche avec un titre seul. Les autres actions sont à venir."
       trigger={
         <Button
           className={mobile ? "mobile-add" : "quick-add-trigger"}
@@ -43,14 +51,22 @@ export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
         </Button>
       }
     >
-      <Badge tone="rose">Aperçu UI · actions indisponibles</Badge>
+      <Badge tone="rose">Task disponible · autres actions à venir</Badge>
+      {capture && <QuickCapture onCreated={() => setCreated(true)} />}
+      {created && <p role="status">Tâche ajoutée à Inbox.</p>}
       <h3 className="group-label">Quick</h3>
       <div className="quick-grid">
         {quick.map(([label, Icon]) => (
-          <button type="button" key={label} className="quick-option" disabled>
+          <button
+            type="button"
+            key={label}
+            className="quick-option"
+            disabled={label !== "Task"}
+            onClick={() => setCapture(true)}
+          >
             <Icon size={24} strokeWidth={1.4} />
             <span>{label}</span>
-            <small>À venir</small>
+            <small>{label === "Task" ? "Capturer" : "À venir"}</small>
           </button>
         ))}
       </div>
