@@ -1,13 +1,46 @@
 [data-theme="jade"] {
   color-scheme: light;
-  --color-blush: #fbf3f3;
-  --color-rose: #955b6b;
-  --color-charcoal: #2d2529;
+  --color-blush: #fbf5f4;
+  --color-lingerie: #e8a7bc;
+  --color-dusty-rose: #a9697d;
+  --color-cream: #fffcf8;
+  --color-white: #ffffff;
+  --color-black: #19171b;
+  --color-charcoal: #302b31;
+  --color-silver: #c5c2c9;
   --surface-page: var(--color-blush);
-  --surface-card: #fffdfb;
+  --surface-card: var(--color-cream);
+  --surface-elevated: var(--color-white);
+  --surface-muted: #f3e8e9;
+  --surface-inverse: var(--color-black);
+  --primary: #a53e65;
+  --primary-hover: #8c3053;
+  --accent: #a53e65;
+  --diamond: #887586;
   --text-primary: var(--color-charcoal);
-  --text-secondary: #74626a;
-  --text-accent: #804456;
-  --border-subtle: #e7d7db;
-  --border-focus: var(--color-rose);
+  --text-secondary: #796c73;
+  --text-inverse: #fbf3f5;
+  --text-on-dark-muted: #bdb0bb;
+  --text-accent: #80495e;
+  --border-subtle: #e7dadd;
+  --border-strong: #b7a1aa;
+  --border-focus: #93526e;
+  --surface-selected: #f1cada;
+  --text-selected: #442e3c;
+  --surface-inverse-selected: #4b293b;
+  --error: #a12743;
+  --error-surface: #fff1f3;
+  --shadow-soft: 0 8px 32px rgb(38 29 33 / 4%);
+  --shadow-float: 0 24px 90px rgb(25 23 27 / 18%);
+  --overlay: rgb(25 23 27 / 42%);
+  --texture-satin: linear-gradient(
+    125deg,
+    #f6e6e8 0%,
+    #fffaf8 34%,
+    #edd6dd 70%,
+    #fff9f5 100%
+  );
+  --texture-lace: url("../assets/tonal-lace.svg");
+  --texture-tulle: radial-gradient(#a57d8a18 0.7px, transparent 0.7px);
+  --decorative-wing-opacity: 0.94;
 }

@@ -1,20 +1,59 @@
-import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
-import styles from '../design-system/styles.css?url';
-
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+} from "@tanstack/react-router";
+import { AppShell } from "../components/layout/app-shell";
+import { getCurrentUser } from "../features/users/current-user";
+import styles from "../design-system/styles.css?url";
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Life OS · Foundation' },
-      { name: 'description', content: 'Les fondations de votre espace personnel Life OS.' },
+      { charSet: "utf-8" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: "Life OS · The Jade Edition" },
+      {
+        name: "description",
+        content: "Votre espace personnel, à votre image.",
+      },
     ],
-    links: [{ rel: 'stylesheet', href: styles }, { rel: 'icon', href: 'data:,' }],
+    links: [
+      { rel: "stylesheet", href: styles },
+      { rel: "icon", href: "data:," },
+    ],
   }),
+  loader: async () => {
+    try {
+      return { user: await getCurrentUser(), profileUnavailable: false };
+    } catch {
+      return { user: null, profileUnavailable: true };
+    }
+  },
   component: Root,
-  notFoundComponent: () => <main><h1>Page introuvable</h1><a href="/">Retour à Life OS</a></main>,
+  notFoundComponent: () => (
+    <div className="page-layout">
+      <h1>Page introuvable</h1>
+      <a href="/today">Retour à Today</a>
+    </div>
+  ),
 });
-
 function Root() {
-  return <html lang="fr" data-theme="jade"><head><HeadContent /></head><body><Outlet /><Scripts /></body></html>;
+  const { user, profileUnavailable } = Route.useLoaderData();
+  return (
+    <html lang="fr" data-theme="jade">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <AppShell user={user} profileUnavailable={profileUnavailable}>
+          <Outlet />
+        </AppShell>
+        <Scripts />
+      </body>
+    </html>
+  );
 }
