@@ -1,6 +1,6 @@
 # Life OS · The Jade Edition
 
-Application personnelle locale. Tasks & Inbox permettent de capturer, clarifier, prioriser et suivre des actions persistées dans SQLite, reliées aux Life Areas, Goals, Projects et Milestones. Today assemble désormais les vraies données du jour ; le Planner reste à venir. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
+Application personnelle locale. Tasks & Inbox permettent de capturer, clarifier, prioriser et suivre des actions persistées dans SQLite, reliées aux Life Areas, Goals, Projects et Milestones. Today assemble désormais les vraies données du jour ; le Planner organise Events, Time Blocks et placements de Tasks. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
 
 ## Stack
 
@@ -322,3 +322,18 @@ Un composant Planning discret indique la disponibilité future du Planner. Aucun
 - Captures ignorées par Git dans `artifacts/phase-5-*.png`, notamment Today desktop/mobile, état vide et journée peu remplie.
 
 Aucune dépendance ni migration ajoutée. Développement local sur `codex/phase-5-today`, sans push ni merge.
+
+
+## Phase 6 — Planner
+
+Day, Week (grille desktop), Month et Agenda ; mobile centré sur une journée avec navigation de dates. Création, édition, retrait, drag & drop et resize ; les alternatives par formulaire restent accessibles au clavier et sur mobile. Les chevauchements disposent de colonnes séparées. Today affiche le planning réel du jour.
+
+Migration additive `004_planner.sql` : `planner_series`, `events`, `time_blocks`, `scheduled_tasks`, `planner_exceptions`. Les migrations 001–003 sont intactes. Un Scheduled Task référence la Task existante ; déplacer ou retirer son créneau ne modifie jamais Do Date, Deadline ou Reminder et ne supprime pas la Task. Les liens de contexte des Time Blocks sont préparés pour le Timer.
+
+Récurrences daily, weekly avec jours choisis, monthly et intervalles. Modification d'une occurrence par exception, de cette occurrence et des suivantes par scission de série, ou de la série entière. Les exceptions conservent leurs clés d'origine ; après une modification du motif, seules les clés encore éligibles apparaissent. Retrait sans suppression physique de l'historique. Les durées sont réelles ; les ancrages restent locaux au fuseau de la série. Voir [les décisions du sprint](docs/sprint-decisions.md), notamment les règles Timer validées par Jade.
+
+Les interfaces External Event/provider et Routine Placement sont préparées, sans connexion externe ni Routine fictive. Les références Tasks à planifier et deadlines sont plafonnées respectivement à 100 et 200 ; le lien Tasks donne accès à la liste complète. Les séries sont filtrées par fenêtre et leurs exceptions chargées en lot. Les futurs travaux peuvent borner aussi l'historique d'exceptions d'une série très longue.
+
+Validation : 102 tests data/service et 39 tests navigateur (141 au total), typecheck, lint, build, desktop/mobile et `git diff --check`. Les 19 nouveaux tests unitaires couvrent notamment les récurrences, exceptions, DST, changements de portée, liens, isolation et chevauchements ; 4 nouveaux parcours navigateur couvrent les mutations, drag/resize, refresh et Today. Migrations sur base vide et upgrade vérifiés ; seed idempotent. Base personnelle sauvegardée avant migration, données préexistantes inchangées, intégrité SQLite `ok`, aucune violation de foreign key. Fixtures seulement dans les bases temporaires de test.
+
+Captures locales ignorées par Git : `artifacts/phase-6-week-desktop.png`, `artifacts/phase-6-week-mobile.png`, `artifacts/phase-6-month-small.png`.

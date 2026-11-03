@@ -1,3 +1,5 @@
+import { PlannerService } from "./planner-service";
+import { SqlitePlannerRepository } from "../db/repositories/sqlite-planner-repository";
 import { connectDatabase, databasePath } from "../db/connection";
 import { SqliteUserRepository } from "../db/repositories/sqlite-user-repository";
 import { SqliteTodayRepository } from "../db/repositories/sqlite-today-repository";
@@ -10,7 +12,16 @@ export function readToday() {
   try {
     return db.transaction(() => {
       const user = requireRecord(new SqliteUserRepository(db).getCurrent());
-      return new TodayService(new SqliteTodayRepository(db)).read(user);
+      const today = new TodayService(new SqliteTodayRepository(db)).read(user);
+      return {
+        ...today,
+        planning: new PlannerService(new SqlitePlannerRepository(db)).list(
+          user.id,
+          today.day,
+          today.day,
+          user.timezone,
+        ),
+      };
     })();
   } finally {
     db.close();

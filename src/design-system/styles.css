@@ -5,6 +5,7 @@
 @import "./components.css";
 @import "./shell.css";
 @import "./today.css";
+@import "./planner.css";
 * {
   box-sizing: border-box;
 }

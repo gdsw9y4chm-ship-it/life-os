@@ -6,6 +6,7 @@ import { Button, Progress } from "../../design-system/components/primitives";
 import { TaskList } from "../tasks/components";
 import { getTodayReferences } from "./api";
 import { calendarDay } from "../../services/task-rules";
+import type { Occurrence } from "../../types/planner";
 import type { TodayData } from "../../types/today";
 import type { TaskReferences, TaskView } from "../../types/task";
 
@@ -17,7 +18,11 @@ const taskSearch = (view: TaskView) => ({
   area: "",
 });
 
-export function TodayView({ data }: { data: TodayData }) {
+export function TodayView({
+  data,
+}: {
+  data: TodayData & { planning?: Occurrence[] };
+}) {
   const router = useRouter();
   const [references, setReferences] = useState<TaskReferences | null>(null);
   const [referenceError, setReferenceError] = useState("");
@@ -246,20 +251,56 @@ export function TodayView({ data }: { data: TodayData }) {
               <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
           )}
-          <TodayPlanning />
+          <TodayPlanning
+            items={data.planning ?? []}
+            day={data.day}
+            timezone={data.user.timezone}
+            locale={data.user.locale}
+          />
         </aside>
       </div>
     </div>
   );
 }
-function TodayPlanning() {
+function TodayPlanning({
+  items,
+  day,
+  timezone,
+  locale,
+}: {
+  items: Occurrence[];
+  day: string;
+  timezone: string;
+  locale: string;
+}) {
+  const clock = (date: string) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: timezone,
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
   return (
-    <section className="today-planning" aria-label="Planning à venir">
+    <section className="today-planning" aria-label="Planning du jour">
       <CalendarDays size={17} aria-hidden="true" />
-      <p>
-        <strong>Planning · à venir</strong>
-        <span>Le planning horaire sera disponible avec Planner.</span>
-      </p>
+      <div>
+        <h2>Planning du jour</h2>
+        {items.length ? (
+          <ul>
+            {items.map((item) => (
+              <li key={item.series.id + item.key}>
+                <Link to="/planner" search={{ day, view: "day" }}>
+                  {clock(item.start)}–{clock(item.end)} · {item.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Aucun créneau prévu aujourd’hui.</p>
+        )}
+        <Link to="/planner" search={{ day, view: "day" }}>
+          Ouvrir Planner
+        </Link>
+      </div>
     </section>
   );
 }
