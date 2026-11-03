@@ -27,8 +27,9 @@ export const saveTask = createServerFn({ method: "POST" })
     try {
       const { withTasks } = await import("../../services/task-service.server");
       const { executeTask } = await import("../../services/task-service");
-      const id = withTasks((service, userId) =>
-        executeTask(service, userId, data),
+      const id = withTasks(
+        (service, userId) => executeTask(service, userId, data),
+        { references: false },
       );
       return { ok: true as const, id };
     } catch (error) {

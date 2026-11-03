@@ -123,3 +123,9 @@ export interface TaskRepository {
   setReminder(userId: string, taskId: string, at: string | null): void;
   transaction<T>(action: () => T): T;
 }
+
+// Lightweight choices loaded only when a Today task's quick actions are opened.
+export interface TaskReferences {
+  projects: { id: string; title: string }[];
+  areas: { id: string; name: string }[];
+}

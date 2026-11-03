@@ -1,6 +1,6 @@
 # Life OS · The Jade Edition
 
-Application personnelle locale. Tasks & Inbox permettent de capturer, clarifier, prioriser et suivre des actions persistées dans SQLite, reliées aux Life Areas, Goals, Projects et Milestones. Le Planner et le dashboard Today restent à venir. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
+Application personnelle locale. Tasks & Inbox permettent de capturer, clarifier, prioriser et suivre des actions persistées dans SQLite, reliées aux Life Areas, Goals, Projects et Milestones. Today assemble désormais les vraies données du jour ; le Planner reste à venir. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
 
 ## Stack
 
@@ -85,7 +85,7 @@ src/tests/                          tests Bun
 scripts/                            commandes DB, routes et serveur local
 ```
 
-`src/components/layout/` contient AppShell, PageLayout, navigation et Quick Add. `src/design-system/components/` contient les primitives génériques. Les helpers React sont dans `lib`. Aucun module métier de Phase 5 ou des phases suivantes n’est initialisé.
+`src/components/layout/` contient AppShell, PageLayout, navigation et Quick Add. `src/design-system/components/` contient les primitives génériques. Les helpers React sont dans `lib`. Le module Today de Phase 5 assemble ces données dans un dashboard quotidien. Les moteurs des phases suivantes restent hors périmètre.
 
 ## Décisions techniques
 
@@ -255,7 +255,7 @@ Numérateur : tâches `done` parmi ces unités. Pourcentage arrondi à l’entie
 ### UI
 
 - `/tasks` : navigation Smart Lists desktop, bandeau horizontal mobile, état et filtres conservés dans l’URL. Inbox avec champ Quick Capture : Entrée crée la tâche sans formulaire complet. Actions rapides dans chaque TaskRow : To Do, priorité, Do Date, Project/Life Area, Someday, archivage/restauration.
-- Today dans Tasks présente Must / Should / Could / No priority ; `/today` reste le shell de Phase 2.
+- Today dans Tasks présente Must / Should / Could / No priority. Depuis la Phase 5, `/today` est un dashboard connecté aux mêmes tâches.
 - `/tasks/$taskId` : page de détail responsive, édition complète, Waiting, Reminder, checklist et sous-tâches. Checklist indépendante des Tasks : ajout, renommage, complétion, retrait et réordonnancement accessible par boutons. Sous-tâches ouvertes depuis leur parent comme de vraies Tasks.
 - TaskRow est réutilisé dans les vues Tasks, Project et les sous-tâches. Complétion et archivage disposent d’un Undo de la dernière action tant que la liste reste affichée. Reopen et restauration restent possibles ensuite.
 - Le bouton + rend Task fonctionnel. Les neuf autres entrées Quick Add restent désactivées. Search cherche les pages et les vraies tâches ; accès aussi depuis le menu mobile.
@@ -270,7 +270,7 @@ Couverture : capture, clarification, transitions, timestamps, Undo, priorités, 
 
 Navigateurs : Chrome via Playwright, workflows desktop 1440×1000 et mobile 390×844 ; contrôles à 320×568 et régressions du shell jusqu’à 1920 px. Captures `artifacts/phase-4-{today,waiting,detail,project}-{desktop,mobile}.png`, ignorées par Git. Les tâches illustrées sont des fixtures de test, jamais des données ajoutées au profil personnel.
 
-Commandes : `bun run db:migrate`, `bun run db:seed`, `bun test src/tests`, `PLAYWRIGHT_CHANNEL=chrome bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run build`, `git diff --check`. Aucune dépendance ajoutée, aucun changement Notion, aucun push/merge. Aucun Planner, notification système, récurrence exécutée ou module Phase 5.
+Commandes : `bun run db:migrate`, `bun run db:seed`, `bun test src/tests`, `PLAYWRIGHT_CHANNEL=chrome bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run build`, `git diff --check`. Aucune dépendance ajoutée, aucun changement Notion, aucun push/merge. À la livraison de la Phase 4 : aucun Planner, notification système, récurrence exécutée ou module Phase 5.
 
 
 ### Passe UX Tasks
@@ -280,3 +280,45 @@ Les onze Smart Lists sont regroupées en Focus, Suivi et Plus sur desktop. Sur m
 Search et Filters partagent une ligne compacte. La Sheet conserve les filtres Context, Project et Life Area et permet de combiner Priority et Effort côté présentation ; les critères restent dans l’URL et suivent les changements de vue.
 
 Le détail présente les propriétés en lecture, avec Terminer/Rouvrir et Modifier. Modifier ouvre le formulaire complet dans une Sheet ; checklist et sous-tâches restent accessibles dans la consultation. Aucun changement de modèle, repository, service, Quick Capture ou progression Project.
+
+
+## Phase 5 — Today
+
+Source produit lue sans modification : [cahier des charges maître Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e), complété par le brief Phase 5. Le suivi Notion porte encore l’ancien avancement Phases 1–2 ; Git constitue la référence de l’état implémenté.
+
+### Lecture du jour
+
+`features/today/api.ts → TodayService → TodayRepository → SQLite`. Une fonction serveur retourne un snapshot transactionnel cohérent : profil, jour local, date localisée, tâches du jour, groupes de priorité, Must, relances dues, compteurs Overdue/Inbox, projets actifs. Le profil est résolu côté serveur et aucune identité n’est acceptée depuis le navigateur.
+
+- Focus réutilise exactement la Smart List Today : To Do / Doing, Do Date égale au jour du profil, sans archives. Waiting, Inbox, Done et Someday ne sont pas présentés comme des actions immédiates.
+- Relances : Waiting non archivé avec Follow-up arrivé, les cinq plus anciennes ; le compteur et « Tout voir » donnent accès à la liste complète.
+- Overdue : même règle que Tasks, Deadline strictement antérieure, hors Done/Someday/archives. Inbox : compte exact des captures non archivées.
+- Quatre Projects actifs maximum, ceux liés au Focus d’abord, puis date de modification décroissante, avec ordre stable par ID.
+- Progression réelle : manual, milestones ou task_based. Aucun pourcentage pour none ou pour un calcul sans dénominateur. Le calcul task_based exclut Someday/archives et ne compte pas une sous-tâche si son parent éligible est dans le même projet, comme Project Detail.
+- « Tâches ouvertes » compte les tâches non terminées, hors Someday/archives, sous-tâches comprises ; c’est distinct du dénominateur de progression.
+- Nom, locale et timezone viennent du User. Le jour est calculé une seule fois par snapshot ; week_start n’intervient pas dans une vue quotidienne sans semaine. Revalidation au retour dans l’onglet et au changement de jour, vérifié toutes les minutes.
+
+### Requêtes et mises à jour
+
+Au plus **sept lectures SQL** par snapshot Today, profil compris (hors lecture du profil déjà utilisée par l’App Shell). Aucun N+1 : les agrégats Tasks/Milestones sont groupés uniquement pour les quatre projets retenus. Aucun chargement de l’historique des tâches ou de tous les objets Projects. Les tâches du jour restent toutes affichées ; les compteurs Inbox/Overdue sont calculés dans SQLite.
+
+Les listes légères id/titre et id/nom nécessaires aux actions rapides sont chargées à la première ouverture, pas au chargement du dashboard. Les mutations Task n’assemblent plus des références Projects/Milestones inutilisées. Les commandes métier sont inchangées.
+
+TaskList/TaskRow, complétion, actions rapides et Undo sont réutilisés. La liste reste montée lorsqu’un groupe ou tout le Focus devient vide, pour préserver Undo. L’invalidation du routeur actualise Focus, compteurs et progression sans recharger le document.
+
+### Interface et périmètre
+
+Header compact Great Vibes, date réelle, greeting du profil et ailes en plumes discrètes. Résumé du jour, Focus avec Must accentués et groupes vides masqués, relances et signal Overdue conditionnels, quatre projets, rappel Inbox si nécessaire. Desktop en deux colonnes ; mobile dans l’ordre Focus → relances → retard → projets → Inbox. État vide unique, avec diamant ponctuel et lien vers les tâches sans Do Date.
+
+Un composant Planning discret indique la disponibilité future du Planner. Aucun calendrier, horaire, événement, habitude, routine, temps suivi ou score inventé. Le Timer existant reste « à venir ». Aucun moteur de Phase 6 n’est développé.
+
+### Validation Phase 5
+
+- 83 tests data/service, dont 13 nouveaux : priorités, exclusions, relances dues/futures, compteurs, sélection des projets, modes de progression, sous-tâches, complétion/Undo, changement de jour, locale/timezone/DST, séparation des profils, vide et nombre fixe de requêtes.
+- 35 tests navigateur, dont 8 nouveaux Today : états vide/peu rempli/rempli, compteurs, groupes, complétion, Undo de la dernière tâche, actions rapides, progression, Quick Add, navigation et persistance après rechargement.
+- Today contrôlé en 1440, 390 et 320 px ; shell également couvert de 320 à 1920 px.
+- Fixtures uniquement dans un répertoire temporaire créé pour Playwright. Le script exige le marqueur de test et un chemin sous le dossier temporaire ; il ne lit jamais LIFE_OS_DB_PATH et n’écrit jamais dans la base personnelle. Pas d’endpoint de fixture dans l’app.
+- Typecheck, lint, build et `git diff --check` réussis, avec vérification visuelle des captures et persistance après rechargement.
+- Captures ignorées par Git dans `artifacts/phase-5-*.png`, notamment Today desktop/mobile, état vide et journée peu remplie.
+
+Aucune dépendance ni migration ajoutée. Développement local sur `codex/phase-5-today`, sans push ni merge.

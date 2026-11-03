@@ -12,6 +12,7 @@ export function withTasks<T>(
     userId: string,
     references: ReturnType<typeof referencesFor> & { timezone: string },
   ) => T,
+  options: { references?: boolean } = {},
 ): T {
   const db = connectDatabase(databasePath());
   try {
@@ -29,7 +30,9 @@ export function withTasks<T>(
     return db
       .transaction(() =>
         action(service, user.id, {
-          ...referencesFor(user.id, projects, areas, milestones),
+          ...(options.references === false
+            ? { projects: [], areas: [], milestones: [] }
+            : referencesFor(user.id, projects, areas, milestones)),
           timezone: user.timezone,
         }),
       )

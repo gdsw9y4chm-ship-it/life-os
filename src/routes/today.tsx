@@ -1,7 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageShell } from "../components/layout/page-shell";
-import { destinations } from "../components/layout/navigation";
+import { getToday } from "../features/today/api";
+import { TodayView } from "../features/today/view";
+import { Button } from "../design-system/components/primitives";
 export const Route = createFileRoute("/today")({
+  loader: () => getToday(),
   head: () => ({ meta: [{ title: "Today · Life OS" }] }),
-  component: () => <PageShell destination={destinations[0]} />,
+  pendingComponent: () => (
+    <div className="page-layout" role="status">
+      Chargement de votre journée…
+    </div>
+  ),
+  errorComponent: ({ reset }) => (
+    <div className="page-layout">
+      <h1>Today</h1>
+      <p role="alert">Votre journée n’a pas pu être chargée.</p>
+      <Button onClick={reset}>Réessayer</Button>
+    </div>
+  ),
+  component: () => <TodayView data={Route.useLoaderData()} />,
 });

@@ -1,5 +1,5 @@
 import { useHydrated } from "../../lib/use-hydrated";
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, type FormEvent, type ReactNode } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import {
   Button,
@@ -12,7 +12,7 @@ import { saveTask } from "./api";
 import type { TaskCommand } from "../../services/task-service";
 import type { TaskSummary, TaskInput } from "../../types/task";
 import { taskPriorities } from "../../types/task";
-import type { Project, LifeArea } from "../../types/organization";
+import type { TaskReferences } from "../../types/task";
 export const taskLabels: Record<string, string> = {
   inbox: "Inbox",
   todo: "To Do",
@@ -115,13 +115,21 @@ export function QuickCapture({
     </form>
   );
 }
-type References = { projects: Project[]; areas: LifeArea[] };
+type References = TaskReferences;
 export function TaskList({
   tasks,
   references,
+  groups,
+  emptyState,
+  onQuickActionsOpen,
+  referencesReady = true,
 }: {
   tasks: TaskSummary[];
   references: References;
+  groups?: { priority: string; tasks: TaskSummary[] }[];
+  emptyState?: ReactNode;
+  onQuickActionsOpen?: () => void;
+  referencesReady?: boolean;
 }) {
   const mutation = useTaskMutation();
   const [undo, setUndo] = useState<TaskCommand | null>(null);
@@ -149,22 +157,59 @@ export function TaskList({
           </Button>
         </div>
       )}
-      {!tasks.length && (
-        <p className="task-empty">
-          Aucune tâche dans cette vue. Votre espace reste libre.
-        </p>
-      )}
-      <ul>
-        {tasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            references={references}
-            busy={mutation.busy}
-            change={change}
-          />
+      {!tasks.length &&
+        (emptyState ?? (
+          <p className="task-empty">
+            Aucune tâche dans cette vue. Votre espace reste libre.
+          </p>
         ))}
-      </ul>
+      {groups ? (
+        groups.map((group) => (
+          <section
+            className={`task-priority-group task-priority-group--${group.priority}`}
+            key={group.priority}
+            aria-label={
+              group.priority === "none"
+                ? "Sans priorité"
+                : taskLabels[group.priority]
+            }
+          >
+            <h3>
+              {group.priority === "none"
+                ? "Sans priorité"
+                : taskLabels[group.priority]}{" "}
+              <span>{group.tasks.length}</span>
+            </h3>
+            <ul>
+              {group.tasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  references={references}
+                  busy={mutation.busy}
+                  change={change}
+                  onQuickActionsOpen={onQuickActionsOpen}
+                  referencesReady={referencesReady}
+                />
+              ))}
+            </ul>
+          </section>
+        ))
+      ) : (
+        <ul>
+          {tasks.map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              references={references}
+              busy={mutation.busy}
+              change={change}
+              onQuickActionsOpen={onQuickActionsOpen}
+              referencesReady={referencesReady}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -173,11 +218,15 @@ export function TaskRow({
   references,
   busy,
   change,
+  onQuickActionsOpen,
+  referencesReady = true,
 }: {
   task: TaskSummary;
   references: References;
   busy: boolean;
   change: (command: TaskCommand, inverse?: TaskCommand) => Promise<void>;
+  onQuickActionsOpen?: () => void;
+  referencesReady?: boolean;
 }) {
   const patch = (values: Partial<TaskInput>) =>
     void change({ kind: "update", id: task.id, values });
@@ -242,9 +291,14 @@ export function TaskRow({
           </Button>
         )}
       </div>
-      <details className="task-quick-actions">
+      <details
+        className="task-quick-actions"
+        onToggle={(event) => {
+          if (event.currentTarget.open) onQuickActionsOpen?.();
+        }}
+      >
         <summary>Actions rapides</summary>
-        <fieldset disabled={busy}>
+        <fieldset disabled={busy || !referencesReady}>
           <div className="task-inline-fields">
             <Select
               label="Priorité"

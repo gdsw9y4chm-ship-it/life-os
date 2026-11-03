@@ -1,13 +1,16 @@
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { rmSync } from "node:fs";
+import {
+  browserDatabasePath,
+  createBrowserDirectory,
+} from "./browser-database";
 import { connectDatabase } from "../src/db/connection";
 import { migrate } from "../src/db/migrate";
 import { seedJade } from "../src/db/seed";
 
 // Browser tests get a fresh database; never reuse the developer's profile.
-const directory = mkdtempSync(join(tmpdir(), "life-os-browser-"));
-const path = join(directory, "test.sqlite");
+process.env.LIFE_OS_BROWSER_DIR ||= createBrowserDirectory();
+const directory = process.env.LIFE_OS_BROWSER_DIR;
+const path = browserDatabasePath();
 const db = connectDatabase(path);
 migrate(db);
 seedJade(db);
