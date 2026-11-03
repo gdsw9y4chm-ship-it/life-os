@@ -1,3 +1,4 @@
+import { useHydrated } from "../../lib/use-hydrated";
 import type { ReactNode } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
@@ -116,12 +117,14 @@ export function Tabs({
   label: string;
   tabs: { value: string; label: string; content: ReactNode }[];
 }) {
+  const hydrated = useHydrated();
   return (
     <TabsPrimitive.Root defaultValue={tabs[0]?.value}>
       <TabsPrimitive.List className="tabs" aria-label={label}>
         {tabs.map((tab) => (
           <TabsPrimitive.Trigger
             className="tab"
+            disabled={!hydrated}
             key={tab.value}
             value={tab.value}
           >

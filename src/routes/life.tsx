@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageShell } from "../components/layout/page-shell";
-import { destinations } from "../components/layout/navigation";
+import { getOrganization } from "../features/organization/api";
+import { LifeView, OrganizationError } from "../features/organization/views";
 export const Route = createFileRoute("/life")({
   head: () => ({ meta: [{ title: "Life · Life OS" }] }),
-  component: () => <PageShell destination={destinations[6]} />,
+  loader: () => getOrganization(),
+  errorComponent: OrganizationError,
+  component: () => <LifeView data={Route.useLoaderData()} />,
 });

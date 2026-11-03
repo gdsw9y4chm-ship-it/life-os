@@ -103,7 +103,7 @@ export function NavigationItem({
       to={to}
       className={`navigation-item ${compact ? "navigation-item--compact" : ""}`}
       activeProps={{ className: "is-active", "aria-current": "page" }}
-      activeOptions={{ exact: true }}
+      activeOptions={{ exact: to !== "/projects" }}
       onClick={onNavigate}
     >
       <Icon size={19} strokeWidth={1.6} aria-hidden="true" />

@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageShell } from "../components/layout/page-shell";
-import { destinations } from "../components/layout/navigation";
+import { getOrganization } from "../features/organization/api";
+import {
+  ProjectsView,
+  OrganizationError,
+} from "../features/organization/views";
 export const Route = createFileRoute("/projects")({
   head: () => ({ meta: [{ title: "Projects · Life OS" }] }),
-  component: () => <PageShell destination={destinations[2]} />,
+  loader: () => getOrganization(),
+  errorComponent: OrganizationError,
+  component: () => <ProjectsView data={Route.useLoaderData()} />,
 });

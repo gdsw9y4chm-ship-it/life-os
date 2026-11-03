@@ -3,14 +3,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { connectDatabase } from "../src/db/connection";
 import { migrate } from "../src/db/migrate";
-import { SqliteUserRepository } from "../src/db/repositories/sqlite-user-repository";
+import { seedJade } from "../src/db/seed";
 
 // Browser tests get a fresh database; never reuse the developer's profile.
 const directory = mkdtempSync(join(tmpdir(), "life-os-browser-"));
 const path = join(directory, "test.sqlite");
 const db = connectDatabase(path);
 migrate(db);
-new SqliteUserRepository(db).seedInitial();
+seedJade(db);
 db.close();
 const child = Bun.spawn(
   [

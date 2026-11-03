@@ -1,6 +1,6 @@
 # Life OS · The Jade Edition
 
-Application personnelle locale. La Phase 2 apporte le Design System Jade et un shell responsive ; les pages métier restent explicitement à venir. Le profil est réellement lu dans SQLite. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
+Application personnelle locale. La Phase 3 apporte les Life Areas, Goals, Projects et Milestones persistés dans SQLite, dans le Design System Jade de Phase 2. Les autres modules restent à venir. La documentation produit reste dans [le cahier des charges Notion](https://app.notion.com/p/408ca21a7c3c81ca8b69da346a00fc9e).
 
 ## Stack
 
@@ -50,34 +50,34 @@ Le typecheck génère l’arbre des routes avant de vérifier les types ; il fon
 - Emplacement par défaut : `data/life-os.sqlite`, relatif à la racine du dépôt.
 - Configuration facultative : copier `.env.example` vers `.env` et adapter `LIFE_OS_DB_PATH`.
 - Connexion centralisée dans `src/db/connection.ts` : clés étrangères activées, délai d’attente de 5 secondes, WAL pour les bases sur disque.
-- Migration SQL versionnée dans `src/db/migrations/001_users.sql`.
-- Tables : `users` et table technique `schema_migrations`.
+- Migrations SQL versionnées : `001_users.sql` et `002_core_organization.sql`. La migration Phase 1 est inchangée.
+- Tables : `users`, `life_areas`, `goals`, `projects`, `milestones` et table technique `schema_migrations`.
 - Toutes les migrations en attente sont appliquées dans une transaction immédiate. Un échec annule la transaction ; un checksum détecte les migrations déjà appliquées qui ont été modifiées. Ajouter une nouvelle migration au registre de `src/db/migrate.ts`, sans modifier celles déjà appliquées.
-- `db:seed` exige les migrations préalables. Il crée Jade une seule fois par identifiant UUID stable et ne réinitialise pas les préférences existantes.
+- `db:seed` exige les migrations préalables. Il crée Jade et ses 11 Life Areas par identifiants stables ; les préférences, renommages, archives et positions existantes ne sont pas réinitialisés. Aucun Goal, Project ou Milestone de démonstration.
 - Avatar initial : `NULL`. Thème `jade`, fuseau `Europe/Paris`, semaine `Monday`, langue `fr-FR`. Dates UTC ISO 8601.
 - Les lectures web ne lancent ni migration ni seed.
 - Les bases, fichiers WAL/SHM, secrets et caches sont exclus de Git.
 
 ## Tests
 
-13 tests Bun couvrent connexion, migrations, réexécution, détection d’historique modifié, rollback, état vide, seed, idempotence, contraintes, récupération du profil, isolation et persistance après réouverture.
+39 tests Bun couvrent la fondation et le domaine Core Data : migrations, seed, validations, relations, isolation, archivage, ordre, progression et persistance après réouverture. 18 tests Playwright couvrent le shell et les workflows métier desktop/mobile (57 tests au total).
 
 Le factory de tests crée des bases en mémoire. Les tests de persistance utilisent des dossiers temporaires uniques, supprimés après fermeture des connexions. La résolution implicite de la base de développement est refusée lorsque `NODE_ENV=test`. Un test vérifie qu’une base sentinelle configurée par variable d’environnement reste identique octet par octet.
 
 ## Architecture
 
 ```text
-src/routes/                         pages shells et document racine
+src/routes/                         pages métier, shells futurs et document racine
   ↓
-src/features/users/                 fonction serveur TanStack Start
+src/features/users|organization/    fonctions serveur TanStack Start et vues métier
   ↓
-src/services/                       UserService et assemblage serveur
+src/services/                       services métier, règles de validation et assemblage serveur
   ↓
-src/db/repositories/                implémentation SQLite de UserRepository
+src/db/repositories/                repositories SQLite indépendants de React
   ↓
 src/db/                             connexion, migrations et SQLite
 
-src/types/                          contrat User / UserRepository
+src/types/                          entités et contrats des repositories
 src/design-system/tokens/            tokens de fondation
 src/design-system/themes/            thème Jade sémantique
 src/design-system/assets/            ailes en plumes WebP et polices locales sous OFL
@@ -85,7 +85,7 @@ src/tests/                          tests Bun
 scripts/                            commandes DB, routes et serveur local
 ```
 
-`src/components/layout/` contient AppShell, PageLayout, navigation et Quick Add. `src/design-system/components/` contient les primitives génériques. Les dossiers `integrations` et `lib` seront créés lorsqu’ils auront une responsabilité réelle. Aucun module métier des phases suivantes n’est initialisé.
+`src/components/layout/` contient AppShell, PageLayout, navigation et Quick Add. `src/design-system/components/` contient les primitives génériques. Les helpers React sont dans `lib`. Aucun module métier de Phase 4 ou des phases suivantes n’est initialisé.
 
 ## Décisions techniques
 
@@ -154,3 +154,48 @@ Architecture, navigation, fonctions et tests existants inchangés. Même branche
 Asset final : `src/design-system/assets/angel-feather-wings.webp`. Génération par l’outil imagegen intégré, puis redimensionnement/encodage WebP avec conservation de l’alpha. Prompt de génération :
 
 > Use case: product-mockup. Asset type: transparent decorative cutout for a restrained premium lingerie-inspired personal app. A pair of real white feather angel wings, airy, soft, delicately layered individual natural feathers with fine down, photographic couture prop quality. Both wings sweep outward and slightly upward, a wide gently curved silhouette, symmetrical overall with natural subtle asymmetry. Wings occupy the image with small margins, no body, no person, no lettering, no logo, no geometric line art, no halo, no glitter. Soft studio light, warm ivory white highlights, very subtle silver-gray depth between feathers, exquisite realistic feather texture. True transparent background with clean delicate feather edges; no background shadow rectangle. Landscape composition approximately 2:1, feather wings only. Restrained ethereal elegance, light enough to sit on blush satin in a UI header.
+
+## Phase 3 · Core Data
+
+Branche `codex/phase-3-core-data`, depuis `main` au commit `2c191ca100ec4db164adfa5f6cf39d9e2d109460`. Référence produit : cahier des charges Notion consulté en lecture seule, sections 13–16, 36–41, 53–54 et 86, complétées par le brief Phase 3. Le suivi Notion d’octobre reste antérieur au merge Phase 2 ; Git fait foi pour l’état du code.
+
+### Modèle et règles
+
+- Une migration additive `002_core_organization.sql` crée quatre tables STRICT, indexées par propriétaire et ordre/statut. Les foreign keys sont actives sur chaque connexion. La migration 001 et son checksum ne changent pas.
+- `life_areas` : propriétaire, nom, description et icône facultatives, position, archivage, timestamps. L’icône est une métadonnée neutre ; aucun thème/couleur/DA dans ces données. L’UI utilise actuellement une icône commune. Les nouveaux domaines sont ajoutés après les existants.
+- `goals` : résultat souhaité, type `numeric | frequency | duration | milestones | manual`, statut `active | paused | completed | archived`, cible/unité/date facultatives. Aucune analyse ni progression de Goal calculée dans cette phase.
+- `projects` : statut `active | paused | waiting | someday | completed | archived`, dates, ordre, mode de progression et liens indépendants vers Life Area et Goal. Les relations facultatives peuvent être ajoutées, changées ou retirées.
+- `milestones` : projet obligatoire, titre, description/date facultatives, statut `pending | in_progress | completed`, ordre stable `(position, id)`. Réordonnancement transactionnel de la liste complète ; IDs étrangers, manquants ou dupliqués refusés. L’ordre est éditable par boutons accessibles au clavier et au toucher.
+- Les propriétaires sont immuables. Les repositories limitent lectures et mutations à `user_id` ; les milestones sont limités via leur projet. La validation des relations est doublée par des triggers SQLite pour empêcher aussi les références croisées lors d’écritures SQL directes.
+- `User → entités` et `Project → Milestones` utilisent `ON DELETE RESTRICT`. Les relations facultatives de Project utilisent `ON DELETE SET NULL`. Aucune suppression physique n’est exposée dans les repositories ou l’UI : archivage et restauration par statut conservent les relations, milestones et timestamps d’origine.
+- Noms/titres non vides, enums, nombres finis, progression 0–100, positions entières, dates calendrier ISO `YYYY-MM-DD` et début ≤ deadline sont validés hors React. Les timestamps sont en UTC ISO 8601 ; dates cibles sans heure pour éviter les décalages de fuseau.
+
+### Services et persistance
+
+`OrganizationService` dépend de quatre interfaces de repository. Les règles pures sont dans `organization-rules.ts`. Les implémentations SQLite utilisent des requêtes paramétrées et partagent ces validations ; aucun CRUD générique ni accès SQL dans React. Les fonctions serveur TanStack Start résolvent le profil Jade côté serveur : aucun `user_id` client n’est accepté. Ce profil local fixe n’est pas une authentification multi-utilisateur ; celle-ci reste hors périmètre.
+
+Chaque mutation web est transactionnelle. Le seed regroupe le profil et ses 11 Life Areas dans une transaction. Les identifiants stables empêchent les doublons même après renommage/archivage ; aucun contenu personnel existant n’est écrasé.
+
+### Progression réellement implémentée
+
+- `none` : aucun pourcentage ni barre.
+- `manual` : valeur explicite finie entre 0 et 100, zéro inclus. Changer vers un autre mode efface l’ancienne valeur manuelle.
+- `milestones` : nombre de milestones `completed` / nombre total du projet, arrondi au pourcentage entier. Sans milestone : valeur absente, invitation à créer une étape. Repasser une étape en cours ou à faire recalcule le résultat.
+- `task_based` : mode stocké, aucune progression ; texte « Disponible lorsque les tâches seront intégrées. »
+- Le statut du projet reste une décision explicite ; atteindre 100 % ne le termine pas automatiquement.
+
+### Interfaces
+
+- `/life` : onglets Life Areas et Goals. Domaines actifs/archivés, création, modification, archivage/restauration par le champ Visibilité. Goals : liste, création, édition du type/cible/date et changement de statut, y compris archivage.
+- `/projects` : sections Active, Paused / Waiting, Someday et Completed / Archived. Création, modification, statut et ouverture du détail. États vides sans données fictives.
+- `/projects/$projectId` : vraies relations, dates, progression et milestones ; création, modification, statut et réordonnancement. Aucune fausse section Tasks/Notes/Time.
+- Réutilisation des composants Phase 2 : PageLayout, Card, Button, champs, Sheet, Tabs, Badge, Progress, EmptyState, ailes et diamant. Formulaires en dialogue desktop / sheet mobile, validation visible, bouton de sauvegarde occupé, conservation du formulaire sur erreur. Les onglets sont désactivés jusqu’à hydratation, comme les boutons existants, afin d’éviter les clics perdus au chargement.
+- Quick Add reste l’aperçu Phase 2 ; les créations métier sont disponibles directement depuis Life et Projects. La navigation vers le détail garde Projects actif.
+
+### Vérification du 3 novembre 2026
+
+39 tests SQLite (13 existants adaptés au nouveau schéma + 26 nouveaux) et 18 tests navigateur (11 existants + 7 nouveaux). Les fixtures métier restent exclusivement dans des bases temporaires de test. Les parcours desktop 1440×1000 et mobile 390×844 couvrent création/édition, relations, archivage, progression, milestones, ordre, persistance après refresh et absence d’erreurs JavaScript sur les parcours normaux. Tests de shell à 320, 390, 768, 1024, 1280 et 1920 px ; formulaire testé aussi à 320×568, erreurs serveur et projet absent vérifiés.
+
+Captures générées par les tests dans `artifacts/phase-3-*` (non versionnées) : Life, Projects, formulaire et détail en desktop/mobile, plus Projects vide. Les projets visibles sur ces captures sont des fixtures isolées, jamais insérées dans la base personnelle.
+
+Commandes : `bun run db:migrate`, `bun run db:seed`, `bun test src/tests`, `PLAYWRIGHT_CHANNEL=chrome bun run test:e2e`, `bun run typecheck`, `bun run lint`, `bun run build`, `git diff --check`. Chrome installé est utilisé car le Chromium propre à Playwright n’est pas installé sur ce Mac. Aucune dépendance ajoutée. Aucun développement Phase 4, push ou merge.
