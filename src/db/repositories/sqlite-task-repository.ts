@@ -12,7 +12,7 @@ import {
   requiredText,
   validateOrder,
 } from "../../services/organization-rules";
-const selection = `SELECT t.*, CASE WHEN t.project_id IS NOT NULL THEN p.life_area_id ELSE t.life_area_id END AS effective_life_area_id, p.title AS project_title, a.name AS life_area_name FROM tasks t LEFT JOIN projects p ON p.id = t.project_id LEFT JOIN life_areas a ON a.id = CASE WHEN t.project_id IS NOT NULL THEN p.life_area_id ELSE t.life_area_id END`;
+export const taskSelection = `SELECT t.*, CASE WHEN t.project_id IS NOT NULL THEN p.life_area_id ELSE t.life_area_id END AS effective_life_area_id, p.title AS project_title, a.name AS life_area_name FROM tasks t LEFT JOIN projects p ON p.id = t.project_id LEFT JOIN life_areas a ON a.id = CASE WHEN t.project_id IS NOT NULL THEN p.life_area_id ELSE t.life_area_id END`;
 const columns = [
   "id",
   "user_id",
@@ -51,7 +51,7 @@ export class SqliteTaskRepository implements TaskRepository {
       .query<
         TaskSummary,
         [string, string]
-      >(`${selection} WHERE t.user_id = ? AND t.id = ?`)
+      >(`${taskSelection} WHERE t.user_id = ? AND t.id = ?`)
       .get(userId, id);
   }
   list(userId: string, filter: TaskFilter): TaskSummary[] {
@@ -125,7 +125,7 @@ export class SqliteTaskRepository implements TaskRepository {
     const query = fold(filter.search?.trim() ?? "");
     return this.db
       .query<TaskSummary, SQLQueryBindings[]>(
-        `${selection} WHERE ${where.join(" AND ")} ORDER BY CASE t.priority WHEN 'must' THEN 0 WHEN 'should' THEN 1 WHEN 'could' THEN 2 ELSE 3 END, t.do_date IS NULL, t.do_date, t.position, t.created_at, t.id`,
+        `${taskSelection} WHERE ${where.join(" AND ")} ORDER BY CASE t.priority WHEN 'must' THEN 0 WHEN 'should' THEN 1 WHEN 'could' THEN 2 ELSE 3 END, t.do_date IS NULL, t.do_date, t.position, t.created_at, t.id`,
       )
       .all(...args)
       .filter(

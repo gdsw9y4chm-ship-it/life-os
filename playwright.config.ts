@@ -1,4 +1,6 @@
+import { createBrowserDirectory } from "./scripts/browser-database";
 import { defineConfig } from "@playwright/test";
+process.env.LIFE_OS_BROWSER_DIR ||= createBrowserDirectory();
 export default defineConfig({
   testDir: "./tests/browser",
   fullyParallel: false,
