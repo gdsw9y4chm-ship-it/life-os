@@ -23,8 +23,8 @@ describe('SQLite foundation', () => {
   test('migrates a clean database and records the schema version', () => {
     migrate(db);
     expect(db.query('SELECT name FROM sqlite_master WHERE type = ? ORDER BY name').all('table'))
-      .toEqual(['goals', 'life_areas', 'milestones', 'projects', 'schema_migrations', 'users'].map(name => ({ name })));
-    expect(db.query('SELECT version, name FROM schema_migrations').all()).toEqual([{ version: 1, name: 'users' }, { version: 2, name: 'core_organization' }]);
+      .toEqual(['goals', 'life_areas', 'milestones', 'projects', 'schema_migrations', 'task_checklist_items', 'task_reminders', 'tasks', 'users'].map(name => ({ name })));
+    expect(db.query('SELECT version, name FROM schema_migrations').all()).toEqual([{ version: 1, name: 'users' }, { version: 2, name: 'core_organization' }, { version: 3, name: 'tasks_inbox' }]);
   });
 
   test('migrations can run twice without changing data', () => {
@@ -32,7 +32,7 @@ describe('SQLite foundation', () => {
     const user = service().initializeProfile();
     migrate(db);
     expect(service().getCurrentUser()).toEqual(user);
-    expect(db.query('SELECT count(*) AS count FROM schema_migrations').get()).toEqual({ count: 2 });
+    expect(db.query('SELECT count(*) AS count FROM schema_migrations').get()).toEqual({ count: 3 });
   });
 
   test('rejects edited migration history', () => {
@@ -42,9 +42,9 @@ describe('SQLite foundation', () => {
 
   test('rolls back a failed migration including its partial DDL', () => {
     migrate(db);
-    expect(() => migrate(db, [...migrations, { version: 3, name: 'broken', sql: 'CREATE TABLE partial (id TEXT); INVALID SQL;' }])).toThrow();
+    expect(() => migrate(db, [...migrations, { version: 4, name: 'broken', sql: 'CREATE TABLE partial (id TEXT); INVALID SQL;' }])).toThrow();
     expect(db.query("SELECT name FROM sqlite_master WHERE name = 'partial'").get()).toBeNull();
-    expect(db.query('SELECT count(*) AS count FROM schema_migrations').get()).toEqual({ count: 2 });
+    expect(db.query('SELECT count(*) AS count FROM schema_migrations').get()).toEqual({ count: 3 });
   });
 
   test('returns null before the initial seed', () => {

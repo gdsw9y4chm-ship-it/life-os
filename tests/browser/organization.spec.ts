@@ -294,7 +294,7 @@ for (const [device, width, height] of [
         page.getByText(
           mode === "none"
             ? "Aucune progression suivie."
-            : "Disponible lorsque les tâches seront intégrées.",
+            : "Aucune tâche pertinente pour calculer la progression.",
           { exact: true },
         ),
       ).toBeVisible();

@@ -1,3 +1,5 @@
+import type { TaskRepository } from "../types/task";
+import { taskBasedProgress } from "./task-rules";
 import type {
   LifeAreaRepository,
   GoalRepository,
@@ -26,6 +28,7 @@ export class OrganizationService {
     private readonly goals: GoalRepository,
     private readonly projects: ProjectRepository,
     private readonly milestones: MilestoneRepository,
+    private readonly tasks?: TaskRepository,
   ) {}
   snapshot(userId: string) {
     return {
@@ -37,10 +40,15 @@ export class OrganizationService {
   detail(userId: string, id: string) {
     const project = requireRecord(this.projects.get(userId, id));
     const milestones = this.milestones.list(userId, id);
+    const tasks = this.tasks?.list(userId, { today: "", projectId: id }) ?? [];
     return {
+      tasks,
       project,
       milestones,
-      progress: projectProgress(project, milestones),
+      progress:
+        project.progress_mode === "task_based"
+          ? taskBasedProgress(tasks)
+          : projectProgress(project, milestones),
     };
   }
   execute(userId: string, command: OrganizationCommand): void {

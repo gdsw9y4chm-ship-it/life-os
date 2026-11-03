@@ -1,3 +1,4 @@
+import { SqliteTaskRepository } from "../db/repositories/sqlite-task-repository";
 import { connectDatabase, databasePath } from "../db/connection";
 import { SqliteLifeAreaRepository } from "../db/repositories/sqlite-life-area-repository";
 import { SqliteGoalRepository } from "../db/repositories/sqlite-goal-repository";
@@ -15,6 +16,7 @@ export function withOrganization<T>(
       new SqliteGoalRepository(db),
       new SqliteProjectRepository(db),
       new SqliteMilestoneRepository(db),
+      new SqliteTaskRepository(db),
     );
     // V1 local profile is resolved on the server, never accepted from a client payload.
     return db.transaction(() => action(service, INITIAL_USER_ID)).immediate();

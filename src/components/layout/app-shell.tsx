@@ -1,3 +1,4 @@
+import { TaskSearchResults } from "../../features/tasks/search";
 import { useHydrated } from "../../lib/use-hydrated";
 import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -38,8 +39,11 @@ export function AppShell({
   const hydrated = useHydrated();
   const location = useLocation();
   const current =
-    destinations.find((item) => (item.to === location.pathname || location.pathname.startsWith(`${item.to}/`)))?.label ||
-    "Design System";
+    destinations.find(
+      (item) =>
+        item.to === location.pathname ||
+        location.pathname.startsWith(`${item.to}/`),
+    )?.label || "Design System";
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -101,7 +105,7 @@ export function AppShell({
   const search = (
     <Dialog
       title="Explorer Life OS"
-      description="Recherchez une page. La recherche dans vos contenus viendra dans une prochaine phase."
+      description="Recherchez une page ou une tâche par titre et description."
       open={searchOpen}
       onOpenChange={(open) => {
         setSearchOpen(open);
@@ -115,8 +119,8 @@ export function AppShell({
       }
     >
       <Input
-        label="Rechercher une page"
-        placeholder="Planner, Notes, Life…"
+        label="Rechercher une page ou une tâche"
+        placeholder="Pages, titres, descriptions…"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
@@ -130,6 +134,10 @@ export function AppShell({
         ))}
         {!filtered.length && <p role="status">Aucune page trouvée.</p>}
       </nav>
+      <TaskSearchResults
+        query={query}
+        onNavigate={() => setSearchOpen(false)}
+      />
     </Dialog>
   );
   return (
@@ -199,6 +207,15 @@ export function AppShell({
                   </IconButton>
                 }
               >
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setSearchOpen(true);
+                  }}
+                >
+                  Search
+                </Button>
                 <nav aria-label="Toutes les pages">
                   {destinations.map((item) => (
                     <NavigationItem
