@@ -7,6 +7,7 @@ const usersSql = readFileSync(new URL('./migrations/001_users.sql', import.meta.
 export interface Migration { version: number; name: string; sql: string }
 export const migrations: readonly Migration[] = [
   { version: 1, name: 'users', sql: usersSql },
+  { version: 2, name: 'core_organization', sql: readFileSync(new URL('./migrations/002_core_organization.sql', import.meta.url), 'utf8') },
 ];
 
 export function migrate(db: Database, steps: readonly Migration[] = migrations): void {

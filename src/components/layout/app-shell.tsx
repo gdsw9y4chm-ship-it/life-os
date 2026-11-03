@@ -38,7 +38,7 @@ export function AppShell({
   const hydrated = useHydrated();
   const location = useLocation();
   const current =
-    destinations.find((item) => item.to === location.pathname)?.label ||
+    destinations.find((item) => (item.to === location.pathname || location.pathname.startsWith(`${item.to}/`)))?.label ||
     "Design System";
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -270,7 +270,7 @@ export function AppShell({
           <span>
             LIFE OS <span aria-hidden="true">·</span> THE JADE EDITION
           </span>
-          <Badge>App Shell · Phase 2</Badge>
+          <Badge>Votre espace personnel</Badge>
         </footer>
       </div>
       <div className="mobile-timer">

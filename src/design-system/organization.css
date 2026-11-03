@@ -1,0 +1,149 @@
+.organization-toolbar,
+.organization-row,
+.organization-item-heading,
+.organization-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.organization-toolbar,
+.organization-row {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.organization-toolbar {
+  margin-block: var(--space-5);
+}
+.organization-toolbar p,
+.organization-meta {
+  color: var(--text-secondary);
+  font-size: var(--text-small);
+}
+.organization-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.organization-grid .card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.organization-grid .organization-row {
+  margin-top: auto;
+}
+.organization-grid h2,
+.project-overview h2 {
+  font-family: var(--font-interface);
+  font-size: 1.1rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.organization-grid h2 a {
+  text-decoration: none;
+}
+.organization-grid h2 a:hover {
+  text-decoration: underline;
+}
+.organization-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.organization-item-heading h2,
+.organization-item-heading h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.organization-item-heading svg {
+  flex-shrink: 0;
+}
+.organization-empty {
+  position: relative;
+  padding-top: var(--space-5);
+}
+.organization-empty > .angel-wings {
+  display: block;
+  width: min(220px, 70%);
+  height: 90px;
+  margin: auto;
+  opacity: 0.7;
+}
+.organization-empty .empty-state {
+  padding-top: var(--space-3);
+}
+.organization-form {
+  display: grid;
+  gap: var(--space-4);
+}
+.organization-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+.organization-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.organization-fields > * {
+  min-width: 0;
+}
+.organization-form input,
+.organization-form select {
+  width: 100%;
+  min-width: 0;
+}
+.organization-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-block: var(--space-6);
+}
+.organization-details dt {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+.organization-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.organization-back {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+}
+.milestone-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.milestone-list h3 {
+  font-size: 1rem;
+}
+.milestone-list .organization-row {
+  margin-top: var(--space-3);
+}
+.organization-actions {
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .organization-fields {
+    grid-template-columns: 1fr;
+  }
+  .organization-toolbar {
+    align-items: stretch;
+  }
+  .organization-toolbar > .button {
+    width: 100%;
+  }
+  .organization-grid {
+    grid-template-columns: 1fr;
+  }
+}
