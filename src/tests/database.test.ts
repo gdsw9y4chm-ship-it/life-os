@@ -56,6 +56,7 @@ describe("SQLite foundation", () => {
         "planner_exceptions",
         "planner_series",
         "projects",
+        "reset_runs",
         "routine_run_steps",
         "routine_runs",
         "routine_steps",
@@ -83,6 +84,7 @@ describe("SQLite foundation", () => {
       { version: 5, name: "time_focus" },
       { version: 6, name: "notes_lists" },
       { version: 7, name: "practices" },
+      { version: 8, name: "reviews" },
     ]);
   });
 

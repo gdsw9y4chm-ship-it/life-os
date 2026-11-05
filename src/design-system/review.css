@@ -1,0 +1,259 @@
+.review-toolbar {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.review-toolbar nav {
+  display: flex;
+  gap: 1rem;
+  margin-right: auto;
+}
+.review-toolbar a {
+  color: var(--text-secondary);
+}
+.review-toolbar a[aria-current="page"],
+.review-toolbar a.is-selected {
+  color: var(--primary);
+  font-weight: 700;
+}
+.review-toolbar .field {
+  max-width: 190px;
+}
+.review-period {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 1rem 0 1.5rem;
+}
+.review-insights {
+  display: grid;
+  gap: 1.2rem;
+}
+.review-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+}
+.review-metrics article {
+  border-bottom: 2px solid #eac4d5;
+  padding: 0.8rem;
+}
+.review-metrics span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.review-metrics strong {
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+.review-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+.review-panel {
+  padding: 1.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  background: var(--surface-card);
+  min-width: 0;
+}
+.review-panel h2 {
+  font-size: 1.2rem;
+  margin: 0 0 0.7rem;
+}
+.review-panel p {
+  font-size: 0.85rem;
+}
+.review-bar {
+  margin: 1.2rem 0;
+}
+.review-bar > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+.review-bar small,
+.review-limit {
+  font-size: 0.75rem !important;
+  color: var(--text-secondary);
+}
+.review-bar .progress-label {
+  font-size: 0.7rem;
+}
+.review-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.8rem 0;
+  overflow-wrap: anywhere;
+}
+.review-row span,
+.review-row small {
+  font-size: 0.8rem;
+}
+.review-projects {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.review-projects article {
+  padding: 1rem;
+  background: var(--surface-page);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.review-projects small {
+  font-size: 0.7rem;
+}
+.review-reset-start {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(130deg, #f9edf1, #fffaf7);
+  border-radius: 20px;
+}
+.review-reset-start > div {
+  flex: 1;
+  min-width: 180px;
+}
+.review-reset-start h2 {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 400;
+  margin: 0;
+}
+.review-reset-start p {
+  font-size: 0.85rem;
+}
+.review-reset-start .crystal {
+  width: 40px;
+  height: auto;
+}
+.review-history {
+  font-size: 0.85rem;
+}
+.review-history summary {
+  cursor: pointer;
+}
+.reset-layout {
+  max-width: 900px;
+  margin: auto;
+}
+.reset-hero {
+  position: relative;
+  text-align: center;
+  padding: 1.5rem;
+  isolation: isolate;
+}
+.reset-hero > .angel-wings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 200px;
+  opacity: 0.15;
+  z-index: -1;
+}
+.reset-hero > .crystal {
+  width: 36px;
+  height: auto;
+}
+.reset-hero h2 {
+  font-size: 1.6rem;
+}
+.reset-hero > p {
+  font-size: 0.8rem;
+}
+.reset-hero nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.7rem;
+  margin: 1rem 0;
+}
+.reset-hero nav span {
+  color: var(--text-secondary);
+}
+.reset-hero nav span[aria-current="step"] {
+  color: var(--primary);
+  font-weight: 700;
+}
+.reset-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+.reset-notes {
+  margin-top: 1.5rem;
+}
+.reset-area {
+  display: inline-block;
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 0.3rem 0.7rem;
+  margin: 0.3rem;
+  font-size: 0.8rem;
+}
+.reset-step a {
+  color: var(--primary);
+  text-underline-offset: 3px;
+}
+.reset-step > a {
+  display: inline-block;
+  margin: 0.6rem;
+}
+.reset-layout > a {
+  display: block;
+  margin: 1.3rem 0;
+  font-size: 0.8rem;
+}
+@media (max-width: 720px) {
+  .review-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .review-metrics strong {
+    font-size: 1.5rem;
+  }
+  .review-columns,
+  .review-projects {
+    grid-template-columns: 1fr;
+  }
+  .review-panel {
+    padding: 1rem;
+  }
+  .review-toolbar {
+    gap: 0.35rem;
+  }
+  .review-toolbar .field {
+    max-width: 155px;
+  }
+  .review-toolbar .button {
+    padding: 0.5rem;
+  }
+  .reset-hero {
+    padding: 1rem 0.2rem;
+  }
+  .reset-step .review-metrics {
+    gap: 0.3rem;
+  }
+  .reset-controls .button {
+    padding: 0.6rem 0.8rem;
+  }
+  .review-reset-start {
+    padding: 1rem;
+  }
+  .review-row > * {
+    max-width: 100%;
+  }
+}
