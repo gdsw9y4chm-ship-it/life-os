@@ -1,3 +1,5 @@
+import { TodayPractices } from "../practices/today";
+import type { getTodayPractices } from "../practices/api";
 import { TodayTime } from "../time/provider";
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
@@ -22,7 +24,10 @@ const taskSearch = (view: TaskView) => ({
 export function TodayView({
   data,
 }: {
-  data: TodayData & { planning?: Occurrence[] };
+  data: TodayData & {
+    planning?: Occurrence[];
+    practices?: Awaited<ReturnType<typeof getTodayPractices>>;
+  };
 }) {
   const router = useRouter();
   const [references, setReferences] = useState<TaskReferences | null>(null);
@@ -253,6 +258,7 @@ export function TodayView({
             </Link>
           )}
           <TodayTime />
+          {data.practices && <TodayPractices data={data.practices} />}
           <TodayPlanning
             items={data.planning ?? []}
             day={data.day}

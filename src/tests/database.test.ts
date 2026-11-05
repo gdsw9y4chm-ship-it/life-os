@@ -43,6 +43,10 @@ describe("SQLite foundation", () => {
       [
         "events",
         "goals",
+        "habit_entries",
+        "habit_pauses",
+        "habit_rules",
+        "habits",
         "life_areas",
         "list_items",
         "milestones",
@@ -52,6 +56,10 @@ describe("SQLite foundation", () => {
         "planner_exceptions",
         "planner_series",
         "projects",
+        "routine_run_steps",
+        "routine_runs",
+        "routine_steps",
+        "routines",
         "scheduled_tasks",
         "schema_migrations",
         "task_checklist_items",
@@ -60,6 +68,8 @@ describe("SQLite foundation", () => {
         "time_blocks",
         "time_pauses",
         "time_sessions",
+        "tracker_entries",
+        "trackers",
         "users",
       ].map((name) => ({ name })),
     );
@@ -71,7 +81,8 @@ describe("SQLite foundation", () => {
       { version: 3, name: "tasks_inbox" },
       { version: 4, name: "planner" },
       { version: 5, name: "time_focus" },
-      {version:6,name:"notes_lists"},
+      { version: 6, name: "notes_lists" },
+      { version: 7, name: "practices" },
     ]);
   });
 

@@ -1,9 +1,16 @@
+import { getTodayPractices } from "../features/practices/api";
 import { createFileRoute } from "@tanstack/react-router";
 import { getToday } from "../features/today/api";
 import { TodayView } from "../features/today/view";
 import { Button } from "../design-system/components/primitives";
 export const Route = createFileRoute("/today")({
-  loader: () => getToday(),
+  loader: async () => {
+    const [today, practices] = await Promise.all([
+      getToday(),
+      getTodayPractices(),
+    ]);
+    return { ...today, practices };
+  },
   head: () => ({ meta: [{ title: "Today · Life OS" }] }),
   pendingComponent: () => (
     <div className="page-layout" role="status">

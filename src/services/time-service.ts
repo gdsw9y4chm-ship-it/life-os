@@ -25,7 +25,7 @@ export class TimeService {
   start(user: string, v: StartTime) {
     return this.repo.transaction(() => {
       if (
-        !["quick", "task", "project", "life_area", "planner"].includes(
+        !["quick", "task", "project", "life_area", "planner", "habit", "routine"].includes(
           v.source.kind,
         )
       )

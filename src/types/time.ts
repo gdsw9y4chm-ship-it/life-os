@@ -1,5 +1,12 @@
 export type TimeSource = {
-  kind: "quick" | "task" | "project" | "life_area" | "planner";
+  kind:
+    | "quick"
+    | "task"
+    | "project"
+    | "life_area"
+    | "planner"
+    | "habit"
+    | "routine";
   id?: string;
   key?: string;
 };
@@ -20,6 +27,9 @@ export interface TimeSession {
   goal_id: string | null;
   life_area_id: string | null;
   planner_id: string | null;
+  habit_id?: string | null;
+  routine_run_id?: string | null;
+  routine_run_step_id?: string | null;
   occurrence_key: string | null;
   planned_minutes: number | null;
   target_minutes: number | null;
