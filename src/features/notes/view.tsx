@@ -124,7 +124,7 @@ export function NotesView({
                   search={{ view, id: n.id, archived }}
                 >
                   {n.title}
-                  <small>{n.kind}</small>
+                  {view==="lists"&&<small>{n.kind}</small>}
                 </Link>
               ))}
             {!(view === "notes" ? data.notes : data.lists).length && (
@@ -170,6 +170,7 @@ function NoteEditor({ note, data }: { note: Note; data: Data }) {
     a = useNoteAutosave(note, data.userId),
     m = useNotesMutation(),
     navigate = useNavigate(),
+    [reading, setReading] = useState(!!note.body),
     [preview, setPreview] = useState(false),
     [selection, setSelection] = useState(""),
     [taskTitle, setTaskTitle] = useState(""),
@@ -197,8 +198,47 @@ function NoteEditor({ note, data }: { note: Note; data: Data }) {
     });
     element?.focus();
   }
+  if (reading)
+    return (
+      <article className="note-reading">
+        <header>
+          <h2>{a.values.title}</h2>
+          <Button onClick={() => setReading(false)}>Modifier</Button>
+          <details>
+            <summary>Autres actions</summary>
+            <Button variant="ghost" onClick={() => setReading(false)}>
+              Relations et gestion
+            </Button>
+          </details>
+        </header>
+        <NotePreview
+          body={a.values.body}
+          onChange={note.archived ? undefined : (body) => change({ body })}
+        />
+        {a.conflict && (
+          <p role="alert">
+            Une autre version existe. Ouvrez Modifier pour conserver votre
+            brouillon.
+          </p>
+        )}
+        {a.recoveries.length > 0 && (
+          <Button onClick={() => setReading(false)}>
+            Brouillons à restaurer
+          </Button>
+        )}
+        {a.status !== "Enregistré" && <p role="status">{a.status}</p>}
+      </article>
+    );
   return (
     <div className="note-editor">
+      <Button
+        variant="secondary"
+        onClick={async () => {
+          if (note.archived || (await a.flush())) setReading(true);
+        }}
+      >
+        Terminer la modification
+      </Button>
       <Input
         label="Titre de la note"
         value={a.values.title}

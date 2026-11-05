@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { PageLayout } from "../../components/layout/page-shell";
 import {
   Button,
+  Progress,
   Input,
   Select,
   Textarea,
@@ -217,7 +218,7 @@ export function TrackersView({
           compteur, oui/non ou échelle.
         </div>
       )}
-      <div className="practice-grid">
+      <div className="practice-grid tracker-dashboard">
         {data.trackers.map((t) => {
           const history = data.entries.filter((e) => e.tracker_id === t.id),
             entry = history.find((e) => e.day === data.day);
@@ -242,117 +243,127 @@ export function TrackersView({
                   Cible : {t.target} {t.unit}
                 </p>
               )}
-              {!archived && (
-                <>
-                  <form
-                    key={`${t.id}-${data.day}-${entry?.updated_at}`}
-                    className="practice-form"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const f = new FormData(e.currentTarget);
-                      void m.run({
-                        kind: "tracker-entry",
-                        id: t.id,
-                        day: data.day,
-                        value: Number(f.get("value")),
-                        note: String(f.get("note") ?? ""),
-                      });
-                    }}
-                  >
-                    {t.kind === "boolean" ? (
-                      <Select
-                        label="Valeur du jour"
-                        name="value"
-                        defaultValue={String(entry?.value ?? 1)}
-                      >
-                        <option value="1">Oui</option>
-                        <option value="0">Non</option>
-                      </Select>
-                    ) : (
-                      <Input
-                        label={`Valeur du jour ${t.unit}`}
-                        name="value"
-                        type="number"
-                        step="any"
-                        min={
-                          t.kind === "scale"
-                            ? t.scale_min
-                            : ["counter", "duration"].includes(t.kind)
-                              ? 0
-                              : undefined
-                        }
-                        max={t.kind === "scale" ? t.scale_max : 1000000000}
-                        required
-                        defaultValue={
-                          entry?.value ?? (t.kind === "scale" ? t.scale_min : 0)
-                        }
-                      />
-                    )}
-                    <Textarea
-                      label="Note du jour"
-                      name="note"
-                      maxLength={10000}
-                      defaultValue={entry?.note ?? ""}
-                    />
-                    <div className="practice-actions">
-                      <Button type="submit" loading={m.busy}>
-                        Enregistrer la valeur
-                      </Button>
-                      {t.kind === "counter" && (
-                        <Button
-                          variant="secondary"
-                          disabled={m.busy}
-                          onClick={() =>
-                            void m.run({
-                              kind: "tracker-entry",
-                              id: t.id,
-                              day: data.day,
-                              value: 1,
-                              note: entry?.note,
-                              increment: true,
-                            })
-                          }
-                        >
-                          +1
-                        </Button>
-                      )}
-                    </div>
-                  </form>
-                  <TrackerEditor tracker={t} />
-                </>
+              {t.target !== null && t.target > 0 && (
+                <Progress
+                  label={`Progression de ${t.title}`}
+                  value={Math.min(100, ((entry?.value ?? 0) / t.target) * 100)}
+                />
               )}
-              <Button
-                variant="ghost"
-                disabled={m.busy}
-                onClick={() =>
-                  void m.run({
-                    kind: "archive",
-                    type: "tracker",
-                    id: t.id,
-                    archived: !archived,
-                  })
-                }
-              >
-                {archived ? "Restaurer" : "Archiver"}
-              </Button>
-              <details>
-                <summary>
-                  Historique · {history.length} valeur(s) sur 90 jours
-                </summary>
-                <ul className="practice-log">
-                  {history.map((e) => (
-                    <li key={e.day}>
-                      <strong>{e.day}</strong> ·{" "}
-                      {t.kind === "boolean"
-                        ? e.value
-                          ? "Oui"
-                          : "Non"
-                        : round(e.value)}{" "}
-                      {t.unit}
-                      {e.note && <p>{e.note}</p>}
-                    </li>
-                  ))}
-                </ul>
+              {!archived && t.kind === "counter" && (
+                <Button
+                  variant="secondary"
+                  disabled={m.busy}
+                  onClick={() =>
+                    void m.run({
+                      kind: "tracker-entry",
+                      id: t.id,
+                      day: data.day,
+                      value: 1,
+                      note: entry?.note,
+                      increment: true,
+                    })
+                  }
+                >
+                  +1
+                </Button>
+              )}
+              <details className="practice-detail">
+                <summary>Détails de {t.title}</summary>
+                {!archived && (
+                  <>
+                    <form
+                      key={`${t.id}-${data.day}-${entry?.updated_at}`}
+                      className="practice-form"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const f = new FormData(e.currentTarget);
+                        void m.run({
+                          kind: "tracker-entry",
+                          id: t.id,
+                          day: data.day,
+                          value: Number(f.get("value")),
+                          note: String(f.get("note") ?? ""),
+                        });
+                      }}
+                    >
+                      {t.kind === "boolean" ? (
+                        <Select
+                          label="Valeur du jour"
+                          name="value"
+                          defaultValue={String(entry?.value ?? 1)}
+                        >
+                          <option value="1">Oui</option>
+                          <option value="0">Non</option>
+                        </Select>
+                      ) : (
+                        <Input
+                          label={`Valeur du jour ${t.unit}`}
+                          name="value"
+                          type="number"
+                          step="any"
+                          min={
+                            t.kind === "scale"
+                              ? t.scale_min
+                              : ["counter", "duration"].includes(t.kind)
+                                ? 0
+                                : undefined
+                          }
+                          max={t.kind === "scale" ? t.scale_max : 1000000000}
+                          required
+                          defaultValue={
+                            entry?.value ??
+                            (t.kind === "scale" ? t.scale_min : 0)
+                          }
+                        />
+                      )}
+                      <Textarea
+                        label="Note du jour"
+                        name="note"
+                        maxLength={10000}
+                        defaultValue={entry?.note ?? ""}
+                      />
+                      <div className="practice-actions">
+                        <Button type="submit" loading={m.busy}>
+                          Enregistrer la valeur
+                        </Button>
+                      </div>
+                    </form>
+                    <TrackerEditor tracker={t} />
+                  </>
+                )}
+                <Button
+                  variant="ghost"
+                  disabled={m.busy}
+                  onClick={() =>
+                    void m.run({
+                      kind: "archive",
+                      type: "tracker",
+                      id: t.id,
+                      archived: !archived,
+                    })
+                  }
+                >
+                  {archived ? "Restaurer" : "Archiver"}
+                </Button>
+                <details>
+                  <summary>
+                    Historique · {history.length} valeur(s) sur 90 jours
+                  </summary>
+                  <ul className="practice-log">
+                    {history.map((e) => (
+                      <li key={e.day}>
+                        <strong>{e.day}</strong> ·{" "}
+                        {t.kind === "boolean"
+                          ? e.value
+                            ? "Oui"
+                            : "Non"
+                          : round(e.value)}{" "}
+                        {t.unit}
+                        {e.note && <p>{e.note}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               </details>
             </article>
           );

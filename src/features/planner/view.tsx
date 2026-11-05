@@ -209,307 +209,340 @@ export function PlannerView({
   const clock = (value: string) =>
     localReminder(value, data.user.timezone).slice(11);
   return (
-    <div className="planner-page"><PageLayout title="Planner" subtitle="Votre temps, à votre rythme.">
-      <div className="planner-toolbar">
-        <Button
-          variant="secondary"
-          onClick={() => onNavigate(step(-1), view)}
-          aria-label="Période précédente"
-        >
-          ←
-        </Button>
-        <Input
-          label="Date du Planner"
-          type="date"
-          value={day}
-          onChange={(e) => e.target.value && onNavigate(e.target.value, view)}
-        />
-        <Button
-          variant="secondary"
-          onClick={() => onNavigate(step(1), view)}
-          aria-label="Période suivante"
-        >
-          →
-        </Button>
-        <Button variant="ghost" onClick={() => onNavigate(data.today, view)}>
-          Aujourd’hui
-        </Button>
-        <Button onClick={() => open({ start_local: day + "T09:00" })}>
-          Créer un créneau
-        </Button>
-      </div>
-      <nav className="planner-tabs" aria-label="Vues du Planner">
-        {(["day", "week", "month", "agenda"] as const).map((v) => (
+    <div className="planner-page">
+      <PageLayout title="Planner" subtitle="Votre temps, à votre rythme.">
+        <div className="planner-toolbar">
           <Button
-            key={v}
-            variant={view === v ? "primary" : "ghost"}
-            aria-current={view === v ? "page" : undefined}
-            onClick={() => onNavigate(day, v)}
+            variant="secondary"
+            onClick={() => onNavigate(step(-1), view)}
+            aria-label="Période précédente"
           >
-            {{ day: "Day", week: "Week", month: "Month", agenda: "Agenda" }[v]}
+            ←
           </Button>
-        ))}
-      </nav>
-      <p className="organization-meta">
-        {data.user.timezone} · Event / Time Block / Task planifiée · Les
-        créneaux ne changent pas Do Date ou Deadline.
-      </p>
-      {error && <p role="alert">{error}</p>}
-      <div className="planner-layout">
-        <section className="planner-calendar" aria-label="Calendrier">
-          {view === "month" ? (
-            <div className="planner-month">
-              {days.map((d) => (
-                <div key={d} className={d === data.today ? "is-today" : ""}>
-                  <Button variant="ghost" onClick={() => onNavigate(d, "day")}>
-                    {Number(d.slice(8))}
-                  </Button>
-                  {dayItems(d)
-                    .filter((i) => i.series.kind === "event")
-                    .slice(0, 2)
-                    .map((i) => (
-                      <button
-                        key={i.series.id + i.key}
-                        onClick={() => open({}, i)}
-                      >
-                        {i.title}
-                      </button>
-                    ))}
-                  {dayItems(d).length > 0 && (
-                    <span>
-                      {dayItems(d).length} créneau
-                      {dayItems(d).length > 1 ? "x" : ""}
-                    </span>
-                  )}
-                  {data.deadlines
-                    .filter((t) => t.deadline === d)
-                    .map((t) => (
-                      <Link
-                        key={t.id}
-                        to="/tasks/$taskId"
-                        params={{ taskId: t.id }}
-                      >
-                        Échéance · {t.title}
-                      </Link>
-                    ))}
-                </div>
-              ))}
-            </div>
-          ) : view === "agenda" ? (
-            <div className="planner-agenda">
-              {days.map((d) => (
-                <section key={d}>
-                  <h2>
-                    {new Intl.DateTimeFormat(data.user.locale, {
-                      dateStyle: "full",
-                      timeZone: "UTC",
-                    }).format(new Date(d + "T12:00Z"))}
-                  </h2>
-                  {dayItems(d).length ? (
-                    dayItems(d).map((i) => (
-                      <button
-                        className={"planner-agenda-item kind-" + i.series.kind}
-                        key={i.series.id + i.key}
-                        onClick={() => open({}, i)}
-                      >
-                        <span>
-                          {clock(i.start)}–{clock(i.end)} ·{" "}
-                          {kinds[i.series.kind]}
-                        </span>
-                        <strong>{i.title}</strong>
-                      </button>
-                    ))
-                  ) : (
-                    <p className="organization-meta">Aucun créneau.</p>
-                  )}
-                </section>
-              ))}
-            </div>
-          ) : (
-            <>
-              <div
-                className="planner-day-head"
-                style={{
-                  gridTemplateColumns: `48px repeat(${shownDays.length}, minmax(0,1fr))`,
-                }}
-              >
-                <span />
-                <>
-                  {shownDays.map((d) => (
-                    <button key={d} onClick={() => onNavigate(d, "day")}>
+          <Input
+            label="Date du Planner"
+            type="date"
+            value={day}
+            onChange={(e) => e.target.value && onNavigate(e.target.value, view)}
+          />
+          <Button
+            variant="secondary"
+            onClick={() => onNavigate(step(1), view)}
+            aria-label="Période suivante"
+          >
+            →
+          </Button>
+          <Button variant="ghost" onClick={() => onNavigate(data.today, view)}>
+            Aujourd’hui
+          </Button>
+          <Button onClick={() => open({ start_local: day + "T09:00" })}>
+            Créer un créneau
+          </Button>
+        </div>
+        <nav className="planner-tabs" aria-label="Vues du Planner">
+          {(["day", "week", "month", "agenda"] as const).map((v) => (
+            <Button
+              key={v}
+              variant={view === v ? "primary" : "ghost"}
+              aria-current={view === v ? "page" : undefined}
+              onClick={() => onNavigate(day, v)}
+            >
+              {
+                { day: "Day", week: "Week", month: "Month", agenda: "Agenda" }[
+                  v
+                ]
+              }
+            </Button>
+          ))}
+        </nav>
+        <div className="planner-legend" aria-label="Types de créneaux">
+          <span className="legend-event">Event</span>
+          <span className="legend-block">Time Block</span>
+          <span className="legend-task">Task</span>
+        </div>
+        {error && <p role="alert">{error}</p>}
+        <div className="planner-layout">
+          <section className="planner-calendar" aria-label="Calendrier">
+            {view === "month" ? (
+              <div className="planner-month">
+                {days.map((d) => (
+                  <div key={d} className={d === data.today ? "is-today" : ""}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => onNavigate(d, "day")}
+                    >
+                      {Number(d.slice(8))}
+                    </Button>
+                    {dayItems(d)
+                      .filter((i) => i.series.kind === "event")
+                      .slice(0, 2)
+                      .map((i) => (
+                        <button
+                          key={i.series.id + i.key}
+                          onClick={() => open({}, i)}
+                        >
+                          {i.title}
+                        </button>
+                      ))}
+                    {dayItems(d).length > 0 && (
+                      <span>
+                        {dayItems(d).length} créneau
+                        {dayItems(d).length > 1 ? "x" : ""}
+                      </span>
+                    )}
+                    {data.deadlines
+                      .filter((t) => t.deadline === d)
+                      .map((t) => (
+                        <Link
+                          key={t.id}
+                          to="/tasks/$taskId"
+                          params={{ taskId: t.id }}
+                        >
+                          Échéance · {t.title}
+                        </Link>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            ) : view === "agenda" ? (
+              <div className="planner-agenda">
+                {days.map((d) => (
+                  <section key={d}>
+                    <h2>
                       {new Intl.DateTimeFormat(data.user.locale, {
-                        weekday: "short",
-                        day: "numeric",
+                        dateStyle: "full",
                         timeZone: "UTC",
                       }).format(new Date(d + "T12:00Z"))}
-                    </button>
-                  ))}
-                </>
+                    </h2>
+                    {dayItems(d).length ? (
+                      dayItems(d).map((i) => (
+                        <button
+                          className={
+                            "planner-agenda-item kind-" + i.series.kind
+                          }
+                          key={i.series.id + i.key}
+                          onClick={() => open({}, i)}
+                        >
+                          <span>
+                            {clock(i.start)}–{clock(i.end)} ·{" "}
+                            {kinds[i.series.kind]}
+                          </span>
+                          <strong>{i.title}</strong>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="organization-meta">Aucun créneau.</p>
+                    )}
+                  </section>
+                ))}
               </div>
-              <div className="planner-grid-scroll" ref={gridScroll}>
+            ) : (
+              <>
                 <div
-                  className="planner-time-grid"
+                  className="planner-day-head"
                   style={{
                     gridTemplateColumns: `48px repeat(${shownDays.length}, minmax(0,1fr))`,
                   }}
                 >
-                  <div className="planner-hours">
-                    {Array.from({ length: 24 }, (_, h) => (
-                      <span key={h}>{String(h).padStart(2, "0")}:00</span>
+                  <span />
+                  <>
+                    {shownDays.map((d) => (
+                      <button key={d} onClick={() => onNavigate(d, "day")}>
+                        {new Intl.DateTimeFormat(data.user.locale, {
+                          weekday: "short",
+                          day: "numeric",
+                          timeZone: "UTC",
+                        }).format(new Date(d + "T12:00Z"))}
+                      </button>
+                    ))}
+                  </>
+                </div>
+                <div className="planner-grid-scroll" ref={gridScroll}>
+                  <div
+                    className="planner-time-grid"
+                    style={{
+                      gridTemplateColumns: `48px repeat(${shownDays.length}, minmax(0,1fr))`,
+                    }}
+                  >
+                    <div className="planner-hours">
+                      {Array.from({ length: 24 }, (_, h) => (
+                        <span key={h}>{String(h).padStart(2, "0")}:00</span>
+                      ))}
+                    </div>
+                    {shownDays.map((d) => (
+                      <div className="planner-day" key={d} data-day={d}>
+                        {Array.from({ length: 48 }, (_, slot) => (
+                          <button
+                            className="planner-slot"
+                            key={slot}
+                            aria-label={`Créer ${d} ${String(Math.floor(slot / 2)).padStart(2, "0")}:${slot % 2 ? "30" : "00"}`}
+                            onClick={() =>
+                              open({
+                                start_local:
+                                  d +
+                                  "T" +
+                                  String(Math.floor(slot / 2)).padStart(
+                                    2,
+                                    "0",
+                                  ) +
+                                  ":" +
+                                  (slot % 2 ? "30" : "00"),
+                              })
+                            }
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => drop(e, d, slot * 30)}
+                          />
+                        ))}
+                        {dayItems(d).map((i, index) => {
+                          const start = localReminder(
+                              i.start,
+                              data.user.timezone,
+                            ),
+                            end = localReminder(i.end, data.user.timezone);
+                          const top =
+                            start.slice(0, 10) < d
+                              ? 0
+                              : Number(start.slice(11, 13)) * 60 +
+                                Number(start.slice(14));
+                          const bottom =
+                            end.slice(0, 10) > d
+                              ? 1440
+                              : Number(end.slice(11, 13)) * 60 +
+                                Number(end.slice(14));
+                          const { lane, columns } = occurrenceLanes(
+                            dayItems(d),
+                          ).get(i.series.id + i.key)!;
+                          return (
+                            <div
+                              key={i.series.id + i.key}
+                              className={
+                                "planner-block kind-" +
+                                i.series.kind +
+                                (bottom - top <= 30 ? " is-short" : "")
+                              }
+                              style={{
+                                top: top * 0.8,
+                                height: Math.max(24, (bottom - top) * 0.8),
+                                left: `${(lane * 100) / columns}%`,
+                                width: `${100 / columns}%`,
+                                zIndex: index + 2,
+                              }}
+                              draggable={!busy}
+                              onDragStart={() => {
+                                drag.current = { item: i };
+                              }}
+                              onDragEnd={() => {
+                                drag.current = null;
+                              }}
+                            >
+                              <button
+                                onClick={() => open({}, i)}
+                                aria-label={`Modifier ${i.title}`}
+                              >
+                                <span>
+                                  {clock(i.start)}–{clock(i.end)} ·{" "}
+                                  {kinds[i.series.kind]}
+                                </span>
+                                <strong>{i.title}</strong>
+                              </button>
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                className="planner-resize"
+                                aria-label={`Redimensionner ${i.title}`}
+                                draggable
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  drag.current = { item: i, resize: true };
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ")
+                                    open({}, i);
+                                }}
+                                onClick={() => open({}, i)}
+                              >
+                                ↕
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     ))}
                   </div>
-                  {shownDays.map((d) => (
-                    <div className="planner-day" key={d} data-day={d}>
-                      {Array.from({ length: 48 }, (_, slot) => (
-                        <button
-                          className="planner-slot"
-                          key={slot}
-                          aria-label={`Créer ${d} ${String(Math.floor(slot / 2)).padStart(2, "0")}:${slot % 2 ? "30" : "00"}`}
-                          onClick={() =>
-                            open({
-                              start_local:
-                                d +
-                                "T" +
-                                String(Math.floor(slot / 2)).padStart(2, "0") +
-                                ":" +
-                                (slot % 2 ? "30" : "00"),
-                            })
-                          }
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => drop(e, d, slot * 30)}
-                        />
-                      ))}
-                      {dayItems(d).map((i, index) => {
-                        const start = localReminder(
-                            i.start,
-                            data.user.timezone,
-                          ),
-                          end = localReminder(i.end, data.user.timezone);
-                        const top =
-                          start.slice(0, 10) < d
-                            ? 0
-                            : Number(start.slice(11, 13)) * 60 +
-                              Number(start.slice(14));
-                        const bottom =
-                          end.slice(0, 10) > d
-                            ? 1440
-                            : Number(end.slice(11, 13)) * 60 +
-                              Number(end.slice(14));
-                        const { lane, columns } = occurrenceLanes(
-                          dayItems(d),
-                        ).get(i.series.id + i.key)!;
-                        return (
-                          <div
-                            key={i.series.id + i.key}
-                            className={"planner-block kind-" + i.series.kind}
-                            style={{
-                              top: top * 0.8,
-                              height: Math.max(24, (bottom - top) * 0.8),
-                              left: `${(lane * 100) / columns}%`,
-                              width: `${100 / columns}%`,
-                              zIndex: index + 2,
-                            }}
-                            draggable={!busy}
-                            onDragStart={() => {
-                              drag.current = { item: i };
-                            }}
-                            onDragEnd={() => {
-                              drag.current = null;
-                            }}
-                          >
-                            <button
-                              onClick={() => open({}, i)}
-                              aria-label={`Modifier ${i.title}`}
-                            >
-                              <span>
-                                {clock(i.start)}–{clock(i.end)} ·{" "}
-                                {kinds[i.series.kind]}
-                              </span>
-                              <strong>{i.title}</strong>
-                            </button>
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              className="planner-resize"
-                              aria-label={`Redimensionner ${i.title}`}
-                              draggable
-                              onDragStart={(e) => {
-                                e.stopPropagation();
-                                drag.current = { item: i, resize: true };
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ")
-                                  open({}, i);
-                              }}
-                              onClick={() => open({}, i)}
-                            >
-                              ↕
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
                 </div>
-              </div>
-            </>
+              </>
+            )}
+          </section>
+          <aside className="planner-unscheduled">
+            <h2>À planifier</h2>
+            <p>Glissez une tâche vers un créneau, ou sélectionnez-la.</p>
+            {data.tasks.length ? (
+              data.tasks.map((t) => (
+                <button
+                  key={t.id}
+                  draggable
+                  onDragStart={() => {
+                    drag.current = { taskId: t.id, title: t.title };
+                  }}
+                  onDragEnd={() => {
+                    drag.current = null;
+                  }}
+                  onClick={() =>
+                    open({
+                      kind: "scheduled_task",
+                      task_id: t.id,
+                      title: t.title,
+                      start_local: day + "T09:00",
+                    })
+                  }
+                >
+                  {t.title}
+                </button>
+              ))
+            ) : (
+              <p>Aucune tâche active à positionner.</p>
+            )}
+            <Link
+              to="/tasks"
+              search={{
+                view: "all",
+                q: "",
+                context: "",
+                project: "",
+                area: "",
+              }}
+            >
+              Toutes les Tasks
+            </Link>
+          </aside>
+        </div>
+        <Sheet
+          title={selected ? "Modifier le créneau" : "Nouveau créneau"}
+          description="Scheduled Time reste indépendant des autres dates."
+          open={editing}
+          onOpenChange={setEditing}
+          trigger={<span />}
+        >
+          {selected && selected.series.kind !== "event" && (
+            <StartTimer
+              source={{
+                kind: "planner",
+                id: selected.series.id,
+                key: selected.key,
+              }}
+            />
           )}
-        </section>
-        <aside className="planner-unscheduled">
-          <h2>À planifier</h2>
-          <p>Glissez une tâche vers un créneau, ou sélectionnez-la.</p>
-          {data.tasks.length ? (
-            data.tasks.map((t) => (
-              <button
-                key={t.id}
-                draggable
-                onDragStart={() => {
-                  drag.current = { taskId: t.id, title: t.title };
-                }}
-                onDragEnd={() => {
-                  drag.current = null;
-                }}
-                onClick={() =>
-                  open({
-                    kind: "scheduled_task",
-                    task_id: t.id,
-                    title: t.title,
-                    start_local: day + "T09:00",
-                  })
-                }
-              >
-                {t.title}
-              </button>
-            ))
-          ) : (
-            <p>Aucune tâche active à positionner.</p>
+          {editing && (
+            <PlannerEditor
+              data={data}
+              item={selected}
+              draft={draft}
+              onSaved={() => setEditing(false)}
+            />
           )}
-          <Link
-            to="/tasks"
-            search={{ view: "all", q: "", context: "", project: "", area: "" }}
-          >
-            Toutes les Tasks
-          </Link>
-        </aside>
-      </div>
-      <Sheet
-        title={selected ? "Modifier le créneau" : "Nouveau créneau"}
-        description="Scheduled Time reste indépendant des autres dates."
-        open={editing}
-        onOpenChange={setEditing}
-        trigger={<span />}
-      >
-        {selected && selected.series.kind !== "event" && <StartTimer source={{kind:"planner",id:selected.series.id,key:selected.key}}/>}
-        {editing && (
-          <PlannerEditor
-            data={data}
-            item={selected}
-            draft={draft}
-            onSaved={() => setEditing(false)}
-          />
-        )}
-      </Sheet>
-    </PageLayout></div>
+        </Sheet>
+      </PageLayout>
+    </div>
   );
 }
 function PlannerEditor({

@@ -483,7 +483,9 @@ export function RoutinesView({
           {!data.steps.length && <p>Ajoutez votre première étape.</p>}
         </section>
       )}
-      <div className="practice-grid">
+      <div
+        className={run ? "practice-grid routine-secondary" : "practice-grid"}
+      >
         {data.routines.map((r) => (
           <article key={r.id} className="practice-card">
             <h2>
@@ -520,7 +522,7 @@ export function RoutinesView({
         </div>
       )}
       {data.runs.length > 0 && (
-        <section className="practice-card practice-run">
+        <section className="practice-card practice-run routine-history">
           <h2>Passages conservés</h2>
           <ul className="practice-log">
             {data.runs.map((r) => (

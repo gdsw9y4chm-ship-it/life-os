@@ -352,7 +352,7 @@ export function HabitsView({
           Aucune Habit pour cette date. Créez votre première intention.
         </div>
       )}
-      <div className="practice-grid">
+      <div className="practice-grid habit-dashboard">
         {data.habits.map((h) => (
           <article
             className="practice-card"
@@ -391,28 +391,6 @@ export function HabitsView({
               value={Math.min(100, (h.day.value / h.rule.target) * 100)}
               label={`Progression de ${h.habit.title}`}
             />
-            <div
-              className="practice-history"
-              aria-label="Historique sur 14 jours"
-            >
-              {h.history.map((d) => (
-                <button
-                  key={d.day}
-                  type="button"
-                  className={`state-${d.state}`}
-                  aria-label={`${d.day} : ${dayStates[d.state]}`}
-                  title={`${d.day} : ${dayStates[d.state]}`}
-                  onClick={() =>
-                    void nav({
-                      to: "/life/habits",
-                      search: { day: d.day, archived },
-                    })
-                  }
-                >
-                  {Number(d.day.slice(-2))}
-                </button>
-              ))}
-            </div>
             {!archived && (
               <div className="practice-actions">
                 <Button
@@ -440,64 +418,94 @@ export function HabitsView({
                 >
                   Done
                 </Button>
-                <Button
-                  variant="ghost"
-                  disabled={m.busy}
-                  onClick={() =>
-                    void m.run({
-                      kind: "habit-log",
-                      id: h.habit.id,
-                      day: data.day,
-                      status: "skip",
-                      value: 0,
-                    })
-                  }
-                >
-                  Skip
-                </Button>
-                <HabitLog h={h} data={data} />
-                {h.rule.target_kind === "duration" && !h.paused && (
-                  <StartTimer
-                    source={{ kind: "habit", id: h.habit.id }}
-                    label="Timer Habit"
-                  />
-                )}
               </div>
             )}
-            <div className="practice-actions">
+            <details className="practice-detail">
+              <summary>Détails de {h.habit.title}</summary>{" "}
+              <div
+                className="practice-history"
+                aria-label="Historique sur 14 jours"
+              >
+                {h.history.map((d) => (
+                  <button
+                    key={d.day}
+                    type="button"
+                    className={`state-${d.state}`}
+                    aria-label={`${d.day} : ${dayStates[d.state]}`}
+                    title={`${d.day} : ${dayStates[d.state]}`}
+                    onClick={() =>
+                      void nav({
+                        to: "/life/habits",
+                        search: { day: d.day, archived },
+                      })
+                    }
+                  >
+                    {Number(d.day.slice(-2))}
+                  </button>
+                ))}
+              </div>
               {!archived && (
-                <>
-                  <HabitEditor data={data} habit={h} />
+                <div className="practice-actions">
+                  {" "}
                   <Button
                     variant="ghost"
                     disabled={m.busy}
                     onClick={() =>
                       void m.run({
-                        kind: "habit-pause",
+                        kind: "habit-log",
                         id: h.habit.id,
-                        paused: !h.paused,
+                        day: data.day,
+                        status: "skip",
+                        value: 0,
                       })
                     }
                   >
-                    {h.paused ? "Reprendre la Habit" : "Mettre en pause"}
+                    Skip
                   </Button>
-                </>
+                  <HabitLog h={h} data={data} />
+                  {h.rule.target_kind === "duration" && !h.paused && (
+                    <StartTimer
+                      source={{ kind: "habit", id: h.habit.id }}
+                      label="Timer Habit"
+                    />
+                  )}
+                </div>
               )}
-              <Button
-                variant="ghost"
-                disabled={m.busy}
-                onClick={() =>
-                  void m.run({
-                    kind: "archive",
-                    type: "habit",
-                    id: h.habit.id,
-                    archived: !archived,
-                  })
-                }
-              >
-                {archived ? "Restaurer" : "Archiver"}
-              </Button>
-            </div>
+              <div className="practice-actions">
+                {!archived && (
+                  <>
+                    <HabitEditor data={data} habit={h} />
+                    <Button
+                      variant="ghost"
+                      disabled={m.busy}
+                      onClick={() =>
+                        void m.run({
+                          kind: "habit-pause",
+                          id: h.habit.id,
+                          paused: !h.paused,
+                        })
+                      }
+                    >
+                      {h.paused ? "Reprendre la Habit" : "Mettre en pause"}
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="ghost"
+                  disabled={m.busy}
+                  onClick={() =>
+                    void m.run({
+                      kind: "archive",
+                      type: "habit",
+                      id: h.habit.id,
+                      archived: !archived,
+                    })
+                  }
+                >
+                  {archived ? "Restaurer" : "Archiver"}
+                </Button>
+              </div>
+            </details>
           </article>
         ))}
       </div>

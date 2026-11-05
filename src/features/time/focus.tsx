@@ -1,4 +1,4 @@
-import {correctedInstant} from "./local-time";
+import { correctedInstant } from "./local-time";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { PageLayout } from "../../components/layout/page-shell";
@@ -9,7 +9,7 @@ import {
   Card,
 } from "../../design-system/components/primitives";
 import { Sheet } from "../../design-system/components/overlays";
-import { AngelWings } from "../../design-system/components/ornaments";
+import { AngelWings, Crystal } from "../../design-system/components/ornaments";
 import { useTime, StartTimer } from "./provider";
 import { actualSeconds, durationLabel } from "./duration";
 import { localReminder } from "../tasks/reminder-time";
@@ -28,6 +28,7 @@ export function FocusView() {
     >
       <div className="focus-stage">
         <AngelWings />
+        <Crystal />
         {s ? (
           <>
             <h2>{s.title}</h2>
@@ -84,7 +85,7 @@ export function FocusView() {
         )}
       </div>
       {t.error && <p role="alert">{t.error}</p>}
-      <section className="time-list">
+      <section className="time-list paused-list">
         <h2>Sessions en pause</h2>
         {t.data?.unfinished
           .filter((s) => s.status === "paused")
@@ -180,9 +181,17 @@ function ManualEditor({
     [end, setEnd] = useState(
       session ? localReminder(session.ended_at!, timezone) : "",
     ),
-    [pauses, setPauses] = useState<{start:string;end:string;originalStart?:string;originalEnd?:string}[]>(
+    [pauses, setPauses] = useState<
+      {
+        start: string;
+        end: string;
+        originalStart?: string;
+        originalEnd?: string;
+      }[]
+    >(
       session?.pauses.map((p) => ({
-        originalStart: p.started_at, originalEnd: p.ended_at!,
+        originalStart: p.started_at,
+        originalEnd: p.ended_at!,
         start: localReminder(p.started_at, timezone),
         end: localReminder(p.ended_at!, timezone),
       })) ?? [],
@@ -199,10 +208,18 @@ function ManualEditor({
             values: {
               id: session?.id,
               title,
-              started_at: correctedInstant(start, timezone, session?.started_at),
+              started_at: correctedInstant(
+                start,
+                timezone,
+                session?.started_at,
+              ),
               ended_at: correctedInstant(end, timezone, session?.ended_at),
               pauses: pauses.map((p) => ({
-                started_at: correctedInstant(p.start, timezone, p.originalStart),
+                started_at: correctedInstant(
+                  p.start,
+                  timezone,
+                  p.originalStart,
+                ),
                 ended_at: correctedInstant(p.end, timezone, p.originalEnd),
               })),
             },
