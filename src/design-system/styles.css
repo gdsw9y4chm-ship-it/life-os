@@ -9,6 +9,7 @@
 @import "./shell.css";
 @import "./today.css";
 @import "./planner.css";
+@import "./polish.css";
 * {
   box-sizing: border-box;
 }

@@ -9,6 +9,9 @@ test.beforeEach(({ page }) => {
   page.on("pageerror", (e) => errors.get(page)!.push(e.message));
 });
 test.afterEach(({ page }) => expect(errors.get(page)).toEqual([]));
+async function edit(page: Page) {
+  await page.getByRole("button", { name: "Modifier", exact: true }).click();
+}
 async function create(page: Page, title: string, body: string) {
   await page.goto("/notes");
   await page
@@ -35,6 +38,7 @@ for (const [device, width, height] of [
       "# Une idée\nTexte important\n- Une puce\n1. Première étape\n- [ ] Vérifier\n> Citation\n[Exemple](https://example.com)";
     await create(page, "Note " + device, body);
     await page.reload();
+    await edit(page);
     await expect(page.getByLabel("Contenu de la note")).toHaveValue(body);
     await page.getByRole("button", { name: "Aperçu", exact: true }).click();
     await expect(
@@ -125,6 +129,7 @@ test("two tabs never overwrite a newer note and conflict can be saved as a separ
   await create(page, "Partagée", "Original");
   const second = await context.newPage();
   await second.goto(page.url());
+  await edit(second);
   await expect(second.getByLabel("Contenu de la note")).toHaveValue("Original");
   await page.getByLabel("Contenu de la note").fill("Version premier onglet");
   await page.getByRole("button", { name: "Enregistrer maintenant" }).click();
@@ -137,10 +142,12 @@ test("two tabs never overwrite a newer note and conflict can be saved as a separ
   await second
     .getByRole("button", { name: "Conserver comme nouvelle note" })
     .click();
+  await edit(second);
   await expect(second.getByLabel("Contenu de la note")).toHaveValue(
     "Brouillon second onglet",
   );
   await page.reload();
+  await edit(page);
   await expect(page.getByLabel("Contenu de la note")).toHaveValue(
     "Version premier onglet",
   );
@@ -161,6 +168,7 @@ test("offline draft survives refresh and saves on retry", async ({
   await context.setOffline(false);
   page.on("dialog", (d) => void d.accept());
   await page.goto(url);
+  await edit(page);
   await expect(page.getByLabel("Contenu de la note")).toHaveValue(
     "Texte hors connexion",
   );
@@ -169,6 +177,7 @@ test("offline draft survives refresh and saves on retry", async ({
     page.locator(".note-editor").getByText("Enregistré", { exact: true }),
   ).toBeVisible();
   await page.reload();
+  await edit(page);
   await expect(page.getByLabel("Contenu de la note")).toHaveValue(
     "Texte hors connexion",
   );
@@ -194,6 +203,7 @@ test("Quick Note and global search are real and persist", async ({ page }) => {
     .getByRole("navigation", { name: "Notes et listes trouvées" })
     .getByRole("link", { name: "Capture immédiate" })
     .click();
+  await edit(page);
   await expect(page.getByLabel("Contenu de la note")).toHaveValue(
     "Mot unique opaline",
   );
@@ -213,11 +223,13 @@ test("archive/restore and 320px note layout remain usable", async ({
     .locator(".notes-index")
     .getByRole("link", { name: /Petite note/ })
     .click();
+  await edit(page);
   await page.getByRole("button", { name: "Restaurer la note" }).click();
   await page
     .locator(".notes-index")
     .getByRole("link", { name: /Petite note/ })
     .click();
+  await edit(page);
   await expect(page.getByLabel("Contenu de la note")).toHaveValue("Un texte");
 });
 test("preview checklist toggles and persists without changing other text", async ({
@@ -232,6 +244,7 @@ test("preview checklist toggles and persists without changing other text", async
     page.locator(".note-editor").getByText("Enregistré", { exact: true }),
   ).toBeVisible();
   await page.reload();
+  await edit(page);
   await expect(page.getByLabel("Contenu de la note")).toHaveValue(
     "Avant\n- [x] Étape\nAprès",
   );

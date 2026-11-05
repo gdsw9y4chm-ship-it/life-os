@@ -68,6 +68,9 @@ for (const [device, width, height] of [
     await page.reload();
     await expect(card.getByText("1 / 3", { exact: true })).toBeVisible();
     await card
+      .getByText("Détails de Lire vingt minutes", { exact: true })
+      .click();
+    await card
       .getByRole("button", { name: "Mettre en pause", exact: true })
       .click();
     await expect(
@@ -92,6 +95,9 @@ for (const [device, width, height] of [
       page.getByRole("link", { name: "Lire vingt minutes", exact: true }),
     ).toBeVisible();
     await page.goto("/life/habits");
+    await card
+      .getByText("Détails de Lire vingt minutes", { exact: true })
+      .click();
     await card
       .getByRole("button", { name: "Timer Habit", exact: true })
       .click();
@@ -168,13 +174,16 @@ for (const [device, width, height] of [
     await d.getByRole("button", { name: "Enregistrer", exact: true }).click();
     await expect(d).not.toBeVisible();
     const card = page.getByRole("article", { name: "Verres d’eau" });
+    await card.getByText("Détails de Verres d’eau", { exact: true }).click();
     await card.getByLabel("Note du jour").fill("Pendant la matinée");
     await card.getByLabel("Valeur du jour verres").fill("2");
     await card.getByRole("button", { name: "Enregistrer la valeur" }).click();
+    await expect(card.locator(".practice-total")).toContainText("2");
     await expect(card.getByLabel("Valeur du jour verres")).toHaveValue("2");
     await card.getByRole("button", { name: "+1", exact: true }).click();
     await expect(card.getByLabel("Valeur du jour verres")).toHaveValue("3");
     await page.reload();
+    await card.getByText("Détails de Verres d’eau", { exact: true }).click();
     await expect(card.getByLabel("Note du jour")).toHaveValue(
       "Pendant la matinée",
     );
@@ -197,8 +206,10 @@ for (const [device, width, height] of [
     await card.getByRole("button", { name: "Archiver", exact: true }).click();
     await expect(card).not.toBeVisible();
     await page.getByRole("link", { name: "Archives", exact: true }).click();
+    await card.getByText("Détails de Verres d’eau", { exact: true }).click();
     await card.getByRole("button", { name: "Restaurer", exact: true }).click();
     await page.getByRole("link", { name: "Actifs", exact: true }).click();
+    await card.getByText("Détails de Verres d’eau", { exact: true }).click();
     await expect(card.getByLabel("Valeur du jour verres")).toHaveValue("3");
   });
 }
