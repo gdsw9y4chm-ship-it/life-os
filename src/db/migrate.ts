@@ -46,6 +46,7 @@ export const migrations: readonly Migration[] = [
       "utf8",
     ),
   },
+  {version:6,name:"notes_lists",sql:readFileSync(new URL("./migrations/006_notes_lists.sql",import.meta.url),"utf8")},
 ];
 
 export function migrate(

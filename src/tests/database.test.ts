@@ -44,7 +44,11 @@ describe("SQLite foundation", () => {
         "events",
         "goals",
         "life_areas",
+        "list_items",
         "milestones",
+        "note_links",
+        "notes",
+        "personal_lists",
         "planner_exceptions",
         "planner_series",
         "projects",
@@ -67,6 +71,7 @@ describe("SQLite foundation", () => {
       { version: 3, name: "tasks_inbox" },
       { version: 4, name: "planner" },
       { version: 5, name: "time_focus" },
+      {version:6,name:"notes_lists"},
     ]);
   });
 

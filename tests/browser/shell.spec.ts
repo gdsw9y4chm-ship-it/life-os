@@ -53,7 +53,7 @@ test("desktop search navigates only to real shell routes", async ({ page }) => {
     .getByRole("navigation", { name: "Résultats de recherche" })
     .getByRole("link", { name: "Notes", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/notes$/);
+  await expect(page).toHaveURL(/\/notes(?:\?|$)/);
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
@@ -83,9 +83,9 @@ for (const [name, width, height] of [
     const dialog = page.getByRole("dialog", { name: "Quick Add", exact: true });
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByText("Task et Timer disponibles · autres actions à venir"),
+      dialog.getByText("Task, Note et Timer disponibles · autres actions à venir"),
     ).toBeVisible();
-    await expect(dialog.locator("button:disabled")).toHaveCount(8);
+    await expect(dialog.locator("button:disabled")).toHaveCount(7);
     const box = await dialog.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);

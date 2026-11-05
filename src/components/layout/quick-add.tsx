@@ -1,3 +1,4 @@
+import { QuickNote } from "../../features/notes/quick-note";
 import { useTime } from "../../features/time/provider";
 import { useState } from "react";
 import { QuickCapture } from "../../features/tasks/components";
@@ -34,6 +35,7 @@ const more: [string, LucideIcon][] = [
 export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
   const timer = useTime();
   const [open, setOpen] = useState(false);
+  const [note, setNote] = useState(false);
   const [capture, setCapture] = useState(false);
   const [created, setCreated] = useState(false);
   return (
@@ -42,10 +44,11 @@ export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
       onOpenChange={(value) => {
         setOpen(value);
         setCapture(false);
+        setNote(false);
         setCreated(false);
       }}
       title="Quick Add"
-      description="Capturez une tâche ou démarrez un Timer."
+      description="Capturez une tâche, une note ou démarrez un Timer."
       trigger={
         <Button
           className={mobile ? "mobile-add" : "quick-add-trigger"}
@@ -57,8 +60,9 @@ export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
       }
     >
       <Badge tone="rose">
-        Task et Timer disponibles · autres actions à venir
+        Task, Note et Timer disponibles · autres actions à venir
       </Badge>
+      {note && <QuickNote />}
       {capture && <QuickCapture onCreated={() => setCreated(true)} />}
       {created && <p role="status">Tâche ajoutée à Inbox.</p>}
       <h3 className="group-label">Quick</h3>
@@ -68,18 +72,26 @@ export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
             type="button"
             key={label}
             className="quick-option"
-            disabled={label !== "Task" && label !== "Start Timer"}
+            disabled={
+              label !== "Task" && label !== "Start Timer" && label !== "Note"
+            }
             onClick={() => {
               if (label === "Start Timer") {
                 setOpen(false);
                 timer.start({ kind: "quick" });
-              } else setCapture(true);
+              } else if (label === "Note") {
+                setNote(true);
+                setCapture(false);
+              } else {
+                setNote(false);
+                setCapture(true);
+              }
             }}
           >
             <Icon size={24} strokeWidth={1.4} />
             <span>{label}</span>
             <small>
-              {label === "Task"
+              {label === "Task" || label === "Note"
                 ? "Capturer"
                 : label === "Start Timer"
                   ? "Démarrer"
