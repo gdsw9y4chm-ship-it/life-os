@@ -17,3 +17,6 @@ Le retrait d'un placement ne modifie ni la Task, ni Do Date, ni Deadline, ni Rem
 ## Timer — précisions techniques
 `actual_duration` est calculée en secondes depuis les horodatages persistés et les intervalles de pause. Elle n'est pas un compteur modifié par JavaScript. Le contexte (Task/Project/Goal/Life Area) et la durée prévue sont figés à la création, pour protéger l'historique. Les corrections manuelles ne modifient pas ce contexte ni le Planner.
 Les durées cibles sont facultatives et ne provoquent jamais de Finish automatique. Les quotas récurrents par domaine ne sont pas introduits dans cette phase. Les sources Habit/Routine sont réservées dans le schéma pour être reliées aux objets réels en Phase 9.
+
+## Notes & Lists
+Éditeur texte avec Markdown et aperçu, sans HTML exécutable ni moteur de documents. Autosave à révision optimiste et brouillons locaux séparés par onglet ; aucune résolution automatique destructive des conflits. Une conversion garde toujours la source, même quand la description Task ne peut contenir qu'un extrait. Les liens et archives préservent les objets d'origine.

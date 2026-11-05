@@ -1,3 +1,4 @@
+import { NotesSearchResults } from "../../features/notes/search";
 import { TimerStrip } from "../../features/time/provider";
 import { TaskSearchResults } from "../../features/tasks/search";
 import { useHydrated } from "../../lib/use-hydrated";
@@ -130,7 +131,7 @@ export function AppShell({
         ))}
         {!filtered.length && <p role="status">Aucune page trouvée.</p>}
       </nav>
-      <TaskSearchResults
+      <NotesSearchResults query={query} onNavigate={() => {setSearchOpen(false);setMenuOpen(false);}}/><TaskSearchResults
         query={query}
         onNavigate={() => setSearchOpen(false)}
       />

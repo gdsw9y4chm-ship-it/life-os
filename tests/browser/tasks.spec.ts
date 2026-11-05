@@ -405,7 +405,7 @@ for (const [device, width, height] of [
       .filter({ visible: true })
       .click();
     const dialog = page.getByRole("dialog", { name: "Quick Add", exact: true });
-    await expect(dialog.locator("button:disabled")).toHaveCount(8);
+    await expect(dialog.locator("button:disabled")).toHaveCount(7);
     await dialog
       .getByRole("button", { name: "Task Capturer", exact: true })
       .click();

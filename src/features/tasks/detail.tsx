@@ -1,3 +1,4 @@
+import { TaskSources } from "../notes/search";
 import { StartTimer } from "../time/provider";
 import { Sheet } from "../../design-system/components/overlays";
 import { useHydrated } from "../../lib/use-hydrated";
@@ -74,7 +75,7 @@ export function TaskDetailView({ data }: { data: DetailData }) {
       >
         ← Retour aux tâches
       </Link>
-      <h2 className="task-detail-title">{task.title}</h2>
+      <h2 className="task-detail-title">{task.title}</h2><TaskSources id={task.id}/>
       {task.parent_task_id && (
         <Link to="/tasks/$taskId" params={{ taskId: task.parent_task_id }}>
           Ouvrir la tâche parente
