@@ -1,3 +1,4 @@
+import { StartTimer } from "../time/provider";
 import { Sheet } from "../../design-system/components/overlays";
 import { useHydrated } from "../../lib/use-hydrated";
 import { useState, type FormEvent } from "react";
@@ -86,6 +87,7 @@ export function TaskDetailView({ data }: { data: DetailData }) {
       )}
       <Card className="task-consultation">
         <div className="task-consultation-actions">
+          <StartTimer source={{ kind: "task", id: task.id }} />
           <Button
             variant="secondary"
             disabled={mutation.busy || !!task.archived_at}

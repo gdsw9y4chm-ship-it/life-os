@@ -83,9 +83,9 @@ for (const [name, width, height] of [
     const dialog = page.getByRole("dialog", { name: "Quick Add", exact: true });
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByText("Task disponible · autres actions à venir"),
+      dialog.getByText("Task et Timer disponibles · autres actions à venir"),
     ).toBeVisible();
-    await expect(dialog.locator("button:disabled")).toHaveCount(9);
+    await expect(dialog.locator("button:disabled")).toHaveCount(8);
     const box = await dialog.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);

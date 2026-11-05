@@ -1,3 +1,4 @@
+import { StartTimer } from "../time/provider";
 import { TaskList, QuickCapture } from "../tasks/components";
 import { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
@@ -111,6 +112,9 @@ export function LifeView({ data }: { data: Snapshot }) {
                           >
                             Voir les tâches
                           </Link>
+                          <StartTimer
+                            source={{ kind: "life_area", id: area.id }}
+                          />
                           <AreaEditor area={area} />
                         </div>
                       </Card>
@@ -298,6 +302,7 @@ export function ProjectDetailView({
       <Link className="organization-back" to="/projects">
         ← Tous les Projects
       </Link>
+      <StartTimer source={{ kind: "project", id: project.id }} />
       <Card className="project-overview">
         <div className="organization-row">
           <h2>{project.title}</h2>

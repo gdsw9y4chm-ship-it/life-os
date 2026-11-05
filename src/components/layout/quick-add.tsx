@@ -1,3 +1,4 @@
+import { useTime } from "../../features/time/provider";
 import { useState } from "react";
 import { QuickCapture } from "../../features/tasks/components";
 import {
@@ -31,16 +32,20 @@ const more: [string, LucideIcon][] = [
   ["List", List],
 ];
 export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
+  const timer = useTime();
+  const [open, setOpen] = useState(false);
   const [capture, setCapture] = useState(false);
   const [created, setCreated] = useState(false);
   return (
     <Sheet
-      onOpenChange={() => {
+      open={open}
+      onOpenChange={(value) => {
+        setOpen(value);
         setCapture(false);
         setCreated(false);
       }}
       title="Quick Add"
-      description="Capturez une tâche avec un titre seul. Les autres actions sont à venir."
+      description="Capturez une tâche ou démarrez un Timer."
       trigger={
         <Button
           className={mobile ? "mobile-add" : "quick-add-trigger"}
@@ -51,7 +56,9 @@ export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
         </Button>
       }
     >
-      <Badge tone="rose">Task disponible · autres actions à venir</Badge>
+      <Badge tone="rose">
+        Task et Timer disponibles · autres actions à venir
+      </Badge>
       {capture && <QuickCapture onCreated={() => setCreated(true)} />}
       {created && <p role="status">Tâche ajoutée à Inbox.</p>}
       <h3 className="group-label">Quick</h3>
@@ -61,12 +68,23 @@ export function QuickAdd({ mobile = false }: { mobile?: boolean }) {
             type="button"
             key={label}
             className="quick-option"
-            disabled={label !== "Task"}
-            onClick={() => setCapture(true)}
+            disabled={label !== "Task" && label !== "Start Timer"}
+            onClick={() => {
+              if (label === "Start Timer") {
+                setOpen(false);
+                timer.start({ kind: "quick" });
+              } else setCapture(true);
+            }}
           >
             <Icon size={24} strokeWidth={1.4} />
             <span>{label}</span>
-            <small>{label === "Task" ? "Capturer" : "À venir"}</small>
+            <small>
+              {label === "Task"
+                ? "Capturer"
+                : label === "Start Timer"
+                  ? "Démarrer"
+                  : "À venir"}
+            </small>
           </button>
         ))}
       </div>

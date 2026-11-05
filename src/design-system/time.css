@@ -1,0 +1,110 @@
+.time-form {
+  display: grid;
+  gap: 16px;
+}
+.time-form fieldset {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+}
+.time-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.focus-stage {
+  position: relative;
+  text-align: center;
+  padding: 64px 20px 32px;
+  isolation: isolate;
+}
+.focus-stage > .angel-wings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 230px;
+  opacity: 0.22;
+  z-index: -1;
+}
+.focus-stage h2 {
+  overflow-wrap: anywhere;
+}
+.focus-clock {
+  font-size: clamp(36px, 7vw, 72px);
+  font-variant-numeric: tabular-nums;
+  margin: 16px 0;
+}
+.focus-stage .time-actions {
+  justify-content: center;
+  margin: 20px 0;
+}
+.focus-stage > a {
+  display: inline-block;
+  margin: 8px;
+}
+.time-list {
+  margin-top: 32px;
+}
+.time-list .card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding: 16px;
+}
+.time-list strong {
+  overflow-wrap: anywhere;
+}
+.time-list p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.time-strip {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.time-strip a {
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  font-size: 11px;
+}
+.time-strip button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  min-height: 28px;
+}
+.mobile-timer.time-strip {
+  flex-wrap: nowrap;
+}
+.mobile-timer.time-strip > a:first-child {
+  max-width: 65%;
+}
+.focus-checklist {
+  text-align: left;
+  max-width: 480px;
+  margin: 20px auto;
+  display: grid;
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .focus-stage {
+    padding: 32px 0 12px;
+  }
+  .time-list .card {
+    padding: 12px;
+  }
+  .time-list .card > div {
+    width: 100%;
+  }
+}

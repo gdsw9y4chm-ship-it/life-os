@@ -1,3 +1,4 @@
+import { TodayTime } from "../time/provider";
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { ArrowUpRight, Inbox, CalendarDays, ArrowRight } from "lucide-react";
@@ -251,6 +252,7 @@ export function TodayView({
               <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
           )}
+          <TodayTime />
           <TodayPlanning
             items={data.planning ?? []}
             day={data.day}

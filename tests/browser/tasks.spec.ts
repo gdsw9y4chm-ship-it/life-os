@@ -383,6 +383,7 @@ for (const [device, width, height] of [
       page.getByLabel("Life Area", { exact: true }).locator("option:checked"),
     ).toHaveText("Maison");
     await page.goto("/life");
+    await expect(page.getByRole("button", {name: "Nouvelle Life Area", exact: true})).toBeEnabled();
     const area = page.locator(".card").filter({
       has: page.getByRole("heading", { name: "Maison", exact: true }),
     });
@@ -404,7 +405,7 @@ for (const [device, width, height] of [
       .filter({ visible: true })
       .click();
     const dialog = page.getByRole("dialog", { name: "Quick Add", exact: true });
-    await expect(dialog.locator("button:disabled")).toHaveCount(9);
+    await expect(dialog.locator("button:disabled")).toHaveCount(8);
     await dialog
       .getByRole("button", { name: "Task Capturer", exact: true })
       .click();
