@@ -1,3 +1,4 @@
+import { TimeProvider } from "../features/time/provider";
 import {
   createRootRoute,
   HeadContent,
@@ -49,9 +50,11 @@ function Root() {
         <HeadContent />
       </head>
       <body>
-        <AppShell user={user} profileUnavailable={profileUnavailable}>
-          <Outlet />
-        </AppShell>
+        <TimeProvider>
+          <AppShell user={user} profileUnavailable={profileUnavailable}>
+            <Outlet />
+          </AppShell>
+        </TimeProvider>
         <Scripts />
       </body>
     </html>

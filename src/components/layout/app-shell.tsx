@@ -1,3 +1,4 @@
+import { TimerStrip } from "../../features/time/provider";
 import { TaskSearchResults } from "../../features/tasks/search";
 import { useHydrated } from "../../lib/use-hydrated";
 import { useState, type ReactNode } from "react";
@@ -6,7 +7,6 @@ import {
   Search,
   Menu,
   ChevronDown,
-  Timer,
   ArrowUpRight,
   PanelTop,
 } from "lucide-react";
@@ -18,11 +18,7 @@ import {
   IconButton,
   Input,
 } from "../../design-system/components/primitives";
-import {
-  Dialog,
-  Sheet,
-  Tooltip,
-} from "../../design-system/components/overlays";
+import { Dialog, Sheet } from "../../design-system/components/overlays";
 import { Diamond } from "../../design-system/components/ornaments";
 import { destinations, NavigationItem } from "./navigation";
 import { QuickAdd } from "./quick-add";
@@ -43,7 +39,7 @@ export function AppShell({
       (item) =>
         item.to === location.pathname ||
         location.pathname.startsWith(`${item.to}/`),
-    )?.label || "Design System";
+    )?.label || (location.pathname === "/focus" ? "Focus" : "Design System");
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -161,14 +157,7 @@ export function AppShell({
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <Tooltip content="Le timer sera disponible dans une prochaine phase.">
-            <button type="button" className="timer-slot" aria-disabled="true">
-              <Timer size={18} />
-              <span>
-                Votre temps, précieux.<small>Timer · à venir</small>
-              </span>
-            </button>
-          </Tooltip>
+          <TimerStrip />
           <Link className="system-link" to="/design-system">
             <PanelTop size={16} />
             Design System
@@ -290,10 +279,7 @@ export function AppShell({
           <Badge>Votre espace personnel</Badge>
         </footer>
       </div>
-      <div className="mobile-timer">
-        <Timer size={14} aria-hidden="true" />
-        <span>Timer · à venir</span>
-      </div>
+      <TimerStrip mobile />
       <nav aria-label="Navigation mobile" className="bottom-nav">
         <NavigationItem {...destinations[0]} compact />
         <NavigationItem {...destinations[1]} compact />

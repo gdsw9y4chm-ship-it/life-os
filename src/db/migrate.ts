@@ -38,6 +38,14 @@ export const migrations: readonly Migration[] = [
       "utf8",
     ),
   },
+  {
+    version: 5,
+    name: "time_focus",
+    sql: readFileSync(
+      new URL("./migrations/005_time_focus.sql", import.meta.url),
+      "utf8",
+    ),
+  },
 ];
 
 export function migrate(

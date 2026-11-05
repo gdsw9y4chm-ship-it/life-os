@@ -1,3 +1,4 @@
+import { StartTimer } from "../time/provider";
 import { occurrenceLanes } from "./layout";
 import { useState, type FormEvent, useRef, useEffect } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
@@ -498,6 +499,7 @@ export function PlannerView({
         onOpenChange={setEditing}
         trigger={<span />}
       >
+        {selected && selected.series.kind !== "event" && <StartTimer source={{kind:"planner",id:selected.series.id,key:selected.key}}/>}
         {editing && (
           <PlannerEditor
             data={data}

@@ -54,6 +54,8 @@ describe("SQLite foundation", () => {
         "task_reminders",
         "tasks",
         "time_blocks",
+        "time_pauses",
+        "time_sessions",
         "users",
       ].map((name) => ({ name })),
     );
@@ -64,6 +66,7 @@ describe("SQLite foundation", () => {
       { version: 2, name: "core_organization" },
       { version: 3, name: "tasks_inbox" },
       { version: 4, name: "planner" },
+      { version: 5, name: "time_focus" },
     ]);
   });
 
