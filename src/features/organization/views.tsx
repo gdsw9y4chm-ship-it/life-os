@@ -1,3 +1,4 @@
+import { PracticeNav } from "../practices/shared";
 import { StartTimer } from "../time/provider";
 import { TaskList, QuickCapture } from "../tasks/components";
 import { useState } from "react";
@@ -57,6 +58,7 @@ export function LifeView({ data }: { data: Snapshot }) {
       title="Life"
       subtitle="Les domaines qui comptent pour vous, et les résultats que vous souhaitez atteindre."
     >
+      <PracticeNav />
       <Tabs
         label="Organisation de Life"
         tabs={[

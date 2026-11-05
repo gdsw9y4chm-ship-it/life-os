@@ -13,7 +13,7 @@ const db = connectDatabase(browserDatabasePath());
 try {
   db.transaction(() => {
     db.exec(
-      "DELETE FROM note_links; DELETE FROM list_items; DELETE FROM personal_lists; DELETE FROM notes; DELETE FROM time_pauses; DELETE FROM time_sessions; DELETE FROM planner_exceptions; DELETE FROM events; DELETE FROM time_blocks; DELETE FROM scheduled_tasks; DELETE FROM planner_series; DELETE FROM task_reminders; DELETE FROM task_checklist_items; DELETE FROM tasks WHERE parent_task_id IS NOT NULL; DELETE FROM tasks; DELETE FROM milestones; DELETE FROM projects; DELETE FROM goals;",
+      "DELETE FROM note_links; DELETE FROM list_items; DELETE FROM personal_lists; DELETE FROM notes; DELETE FROM time_pauses; DELETE FROM time_sessions; DELETE FROM routine_run_steps; DELETE FROM routine_runs; DELETE FROM routine_steps; DELETE FROM routines; DELETE FROM habit_entries; DELETE FROM habit_rules; DELETE FROM habit_pauses; DELETE FROM habits; DELETE FROM tracker_entries; DELETE FROM trackers; DELETE FROM planner_exceptions; DELETE FROM events; DELETE FROM time_blocks; DELETE FROM scheduled_tasks; DELETE FROM planner_series; DELETE FROM task_reminders; DELETE FROM task_checklist_items; DELETE FROM tasks WHERE parent_task_id IS NOT NULL; DELETE FROM tasks; DELETE FROM milestones; DELETE FROM projects; DELETE FROM goals;",
     );
     if (!["populated", "sparse"].includes(process.argv[2])) return;
     const user = new SqliteUserRepository(db).getCurrent()!;

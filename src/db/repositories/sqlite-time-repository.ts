@@ -47,6 +47,14 @@ export class SqliteTimeRepository {
       >("SELECT * FROM time_sessions WHERE user_id=? AND started_at<? AND (ended_at IS NULL OR ended_at>?)")
       .all(user, to, from);
   }
+  habitRange(user: string, from: string, to: string) {
+    return this.db
+      .query<
+        TimeSession,
+        [string, string, string]
+      >("SELECT * FROM time_sessions WHERE user_id=? AND habit_id IS NOT NULL AND status='completed' AND started_at<? AND ended_at>?")
+      .all(user, to, from);
+  }
   pauses(ids: string[]) {
     return ids.length
       ? this.db
@@ -63,7 +71,7 @@ export class SqliteTimeRepository {
       .query(
         `INSERT INTO time_sessions (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")})`,
       )
-      .run(...keys.map((k) => s[k]));
+      .run(...keys.map((k) => s[k] ?? null));
   }
   state(id: string, status: TimeSession["status"], now: string) {
     this.db
@@ -109,6 +117,9 @@ export class SqliteTimeRepository {
   context(user: string, source: TimeSource) {
     const result = {
       title: "Session libre",
+      habit_id: null as string | null,
+      routine_run_id: null as string | null,
+      routine_run_step_id: null as string | null,
       task_id: null as string | null,
       project_id: null as string | null,
       goal_id: null as string | null,
@@ -123,12 +134,46 @@ export class SqliteTimeRepository {
             life_area_id: string | null;
           },
           [string, string]
-        >("SELECT title,project_id,life_area_id FROM tasks WHERE user_id=? AND id=?")
+        >(
+          "SELECT title,project_id,life_area_id FROM tasks WHERE user_id=? AND id=?",
+        )
         .get(user, source.id!);
       if (!t) throw new Error("Task introuvable.");
       Object.assign(result, t, { task_id: source.id });
     } else if (source.kind === "project") result.project_id = source.id!;
     else if (source.kind === "life_area") result.life_area_id = source.id!;
+    if (source.kind === "habit") {
+      const h = this.db
+        .query<
+          { title: string; life_area_id: string | null },
+          [string, string]
+        >("SELECT title,life_area_id FROM habits WHERE user_id=? AND id=? AND archived=0")
+        .get(user, source.id!);
+      if (!h) throw new Error("Habit introuvable.");
+      Object.assign(result, h, { habit_id: source.id });
+    }
+    if (source.kind === "routine") {
+      const r = this.db
+        .query<
+          { title: string },
+          [string, string]
+        >("SELECT title FROM routine_runs WHERE user_id=? AND id=? AND status='running'")
+        .get(user, source.id!);
+      if (!r) throw new Error("Routine Run actif introuvable.");
+      result.title = r.title;
+      result.routine_run_id = source.id!;
+      if (source.key) {
+        const step = this.db
+          .query<
+            { title: string },
+            [string, string]
+          >("SELECT title FROM routine_run_steps WHERE run_id=? AND id=? AND kind='timer' AND status='pending'")
+          .get(source.id!, source.key);
+        if (!step) throw new Error("Étape Timer introuvable.");
+        result.title = step.title;
+        result.routine_run_step_id = source.key;
+      }
+    }
     if (result.project_id) {
       const p = this.db
         .query<
@@ -138,7 +183,9 @@ export class SqliteTimeRepository {
             life_area_id: string | null;
           },
           [string, string]
-        >("SELECT title,goal_id,life_area_id FROM projects WHERE user_id=? AND id=?")
+        >(
+          "SELECT title,goal_id,life_area_id FROM projects WHERE user_id=? AND id=?",
+        )
         .get(user, result.project_id);
       if (!p) throw new Error("Project introuvable.");
       result.goal_id = p.goal_id;
